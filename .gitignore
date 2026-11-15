@@ -1,6 +1,6 @@
 # Generados (se reconstruyen con assemble.py / build.py)
-game.js
-index.html
+/game.js
+/index.html
 web/dist/
 # Dependencias y registros
 node_modules/
