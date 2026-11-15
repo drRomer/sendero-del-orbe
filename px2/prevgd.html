@@ -1,0 +1,17 @@
+<!doctype html><html><body style="margin:0"><script src="pxr9_part.js"></script><script src="chars9.js"></script><script src="guard10.js"></script><script>
+try{const T=Math.PI*2,cy=(n,f)=>Array.from({length:n},(_,i)=>f(i));
+ const rows=[
+  ['ENT (plano terrenal)',[ent9(1,0,false,0),ent9(0,0,false,0),ent9(0,1.5,true,0),ent9(0,0,true,1)],['encerrado','despierto','camina','golpe']],
+  ['ANTIGUO ERRANTE (plano cósmico)',[errante10(1,0,false,0),errante10(0,0,false,0),errante10(0,1.5,true,0),errante10(0,0,true,1)],['encerrado','despierto','camina','golpe']],
+  ['JAURÍA DE LOBOS',[wolf10(0,4,'sit',0),wolf10(1,4,'sit',0),...cy(4,f=>wolf10(f,4,'run',0)),wolf10(0,4,'bite',0)],['encadenado','gruñe','carrera','','','','muerde']],
+  ['SABUESOS ESPIRITUALES',[wolf10(0,4,'sit',1),wolf10(1,4,'sit',1),...cy(4,f=>wolf10(f,4,'run',1)),wolf10(0,4,'bite',1)],['encadenado','gruñe','carrera','','','','muerde']],
+  ['HIPOGRIFO',[griffin10(0,4,'perch',0),...cy(4,f=>griffin10(f,4,'fly',0)),griffin10(0,4,'dive',0)],['encadenado','vuelo','','','','picada']],
+  ['PEGASO',[griffin10(0,4,'perch',1),...cy(4,f=>griffin10(f,4,'fly',1)),griffin10(0,4,'dive',1)],['encadenado','vuelo','','','','picada']]];
+ const Z=3,G=14;let W=0,H=50;const lay=[];for(const [n,ims,l] of rows){const h=Math.max(...ims.map(c=>c.height))*Z;lay.push([n,ims,l,H]);H+=h+60;W=Math.max(W,ims.reduce((a,c)=>a+c.width*Z+G,20));}
+ const c=document.createElement('canvas');c.width=W;c.height=H;const g=c.getContext('2d');g.imageSmoothingEnabled=false;
+ const bg=g.createLinearGradient(0,0,0,H);bg.addColorStop(0,'#2a3a2a');bg.addColorStop(.5,'#2a2a3a');bg.addColorStop(1,'#1a1430');g.fillStyle=bg;g.fillRect(0,0,W,H);
+ g.fillStyle='#ffe27a';g.font='bold 22px monospace';g.fillText('Guardianes que se alternan (orilla izquierda)',10,30);
+ for(const [n,ims,l,y0] of lay){g.fillStyle='#fff';g.font='bold 17px monospace';g.fillText(n,10,y0+18);let x=10;const h=Math.max(...ims.map(c=>c.height))*Z;
+   ims.forEach((im,i)=>{g.fillStyle='rgba(0,0,0,.22)';g.fillRect(x,y0+26,im.width*Z,h);g.drawImage(im,x,y0+26+h-im.height*Z,im.width*Z,im.height*Z);if(l[i]){g.fillStyle='#d8cce0';g.font='13px monospace';g.fillText(l[i],x+2,y0+26+h+16);}x+=im.width*Z+G;});}
+ window.OUT=c.toDataURL();}catch(e){window.ERR=e.stack;}window.DONE=1;
+</script></body></html>

@@ -1,0 +1,256 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no,viewport-fit=cover">
+<meta name="theme-color" content="#120c18">
+<title>Sendero del Orbe · Cuentos del Medioevo</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Press+Start+2P&family=VT323&display=swap" rel="stylesheet">
+<style>
+:root{--sat:env(safe-area-inset-top,0px);--sab:env(safe-area-inset-bottom,0px);--sal:env(safe-area-inset-left,0px);--sar:env(safe-area-inset-right,0px);
+  --ink:#120c18;--paper:#f6f3ea;--gold:#ffd04a;--goldD:#c08a1c;--red:#d8333f;--redD:#851b2c;--leaf:#7fd04e;--leafD:#2f7a30;--blue:#3f6fd8;--panel:#241a34;--px:"Press Start 2P",monospace;--vt:VT323,monospace}
+*{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent;user-select:none;-webkit-user-select:none;-webkit-touch-callout:none}
+html,body{width:100%;height:100%;overflow:hidden;background:var(--ink);overscroll-behavior:none}
+body{position:fixed;inset:0;font-family:var(--vt);color:var(--paper)}
+canvas{position:absolute;inset:0;width:100%;height:100%;touch-action:none;display:block;image-rendering:pixelated;image-rendering:crisp-edges}
+.hidden{display:none!important}
+#crt{position:absolute;inset:0;pointer-events:none;display:none;background:repeating-linear-gradient(to bottom,rgba(0,0,0,.22) 0 1px,transparent 1px 3px);box-shadow:inset 0 0 90px rgba(0,0,0,.55)}
+#crt.on{display:block}
+#crt.on::after{content:'';position:absolute;inset:0;background:radial-gradient(ellipse at center,rgba(255,255,255,.04),transparent 60%);mix-blend-mode:screen}
+button{font-family:inherit;cursor:pointer}
+.pxbox{background:var(--panel);border:3px solid var(--paper);box-shadow:0 0 0 3px var(--ink),6px 6px 0 3px rgba(0,0,0,.55)}
+/* HUD */
+#hud{position:absolute;inset:0;pointer-events:none}
+.top{position:absolute;left:0;right:0;top:0;padding:calc(var(--sat) + 10px) calc(var(--sar) + 12px) 0 calc(var(--sal) + 12px);display:flex;align-items:center;gap:10px}
+.ib{pointer-events:auto;width:38px;height:38px;flex:none;border:3px solid var(--paper);background:var(--panel);box-shadow:0 0 0 2px var(--ink),3px 3px 0 2px rgba(0,0,0,.5);color:var(--paper);font:10px var(--px)}
+.lvbox{flex:1;min-width:0}
+#lvText{font:10px var(--px);letter-spacing:.06em;text-shadow:2px 2px 0 var(--ink)}
+.prog{position:relative;height:10px;margin-top:7px;margin-right:16px;background:var(--ink);border:2px solid var(--paper)}
+.prog i{position:absolute;left:0;top:0;bottom:0;width:0;background:repeating-linear-gradient(90deg,var(--leaf) 0 6px,#5aa844 6px 8px)}
+.prog b{position:absolute;right:-16px;top:50%;transform:translateY(-50%);padding:3px 4px;background:var(--red);border:2px solid var(--paper);font:7px var(--px);color:#fff}
+.coins{display:flex;align-items:center;gap:6px;background:var(--panel);border:3px solid var(--paper);box-shadow:0 0 0 2px var(--ink);padding:0 9px;height:38px;font:12px var(--px);flex:none}
+.coin{display:inline-block;width:12px;height:12px;flex:none;background:var(--gold);box-shadow:inset -3px -3px 0 var(--goldD),inset 2px 2px 0 #fff3b0,0 0 0 2px var(--ink)}
+#bossBar{position:absolute;left:50%;transform:translateX(-50%);top:calc(var(--sat) + 60px);width:min(320px,76vw);text-align:center}
+#bossBar .bn{font:8px var(--px);letter-spacing:.12em;color:#ffb0a0;text-shadow:2px 2px 0 var(--ink)}
+#bossBar .bb{height:12px;margin-top:5px;background:var(--ink);border:2px solid var(--paper);overflow:hidden}
+#bossBar .bb i{display:block;height:100%;width:100%;background:repeating-linear-gradient(90deg,#ff5a4a 0 6px,var(--red) 6px 8px);transition:width .12s steps(6)}
+#hint{position:absolute;left:0;right:0;bottom:calc(var(--sab) + 124px);text-align:center;font:22px/1 var(--vt);transition:opacity .6s;padding:0 26px}
+#hint span{display:inline-block;background:rgba(18,12,24,.78);border:2px solid var(--paper);padding:8px 12px;text-shadow:2px 2px 0 var(--ink)}
+#bSlash{--p:0%;pointer-events:auto;position:absolute;right:calc(var(--sar) + 16px);bottom:calc(var(--sab) + 22px);width:78px;height:78px;border:0;padding:5px;background:conic-gradient(#c8a0ff var(--p),#2a1e3e 0);box-shadow:0 0 0 3px var(--paper),0 0 0 6px var(--ink),5px 5px 0 6px rgba(0,0,0,.5)}
+#bSlash span{display:grid;place-items:center;width:100%;height:100%;background:#2a1e3e;font:9px var(--px);color:#a890d0}
+#bSlash.ready span{background:#7a46d8;color:#fff;text-shadow:2px 2px 0 var(--ink)}
+#bSlash.ready{animation:pulse .5s steps(2) infinite}
+@keyframes pulse{50%{box-shadow:0 0 0 3px #fff,0 0 0 6px #7a46d8,5px 5px 0 6px rgba(0,0,0,.5)}}
+#weap{position:absolute;left:calc(var(--sal) + 14px);bottom:calc(var(--sab) + 32px);font:8px var(--px);letter-spacing:.06em;background:var(--panel);border:3px solid var(--paper);box-shadow:0 0 0 2px var(--ink);padding:8px 10px;display:flex;align-items:center;gap:8px}
+#weap i{width:10px;height:10px;background:#d8c8a0;box-shadow:0 0 0 2px var(--ink)}
+/* Pantallas */
+.screen{position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:14px;padding:calc(var(--sat) + 18px) calc(var(--sar) + 18px) calc(var(--sab) + 18px) calc(var(--sal) + 18px);background:rgba(18,12,24,.5);overflow-y:auto}
+.logo{text-align:center;line-height:1.1}
+.logo small{display:block;font:12px var(--px);letter-spacing:.2em;color:var(--gold);text-shadow:3px 3px 0 var(--ink);padding-left:.2em}
+.logo b{display:block;font:clamp(30px,10.5vw,48px) var(--px);color:var(--leaf);text-shadow:3px 0 0 var(--ink),-3px 0 0 var(--ink),0 3px 0 var(--ink),0 -3px 0 var(--ink),4px 4px 0 var(--leafD),7px 7px 0 var(--ink);margin-top:10px}
+#menu,#mainScr,#optScr{justify-content:flex-start}#menu>:first-child,#mainScr>:first-child,#optScr>:first-child{margin-top:auto}#menu>:last-child,#mainScr>:last-child,#optScr>:last-child{margin-bottom:auto}
+#titleScr{cursor:pointer;background:radial-gradient(ellipse at 50% 42%,rgba(40,24,60,.35),rgba(10,6,16,.82) 75%);gap:18px}
+#titleScr .rays{position:absolute;left:50%;top:38%;width:160vmax;height:160vmax;margin:-80vmax 0 0 -80vmax;background:repeating-conic-gradient(rgba(120,240,255,.07) 0 6deg,transparent 6deg 18deg);animation:spin 40s linear infinite,fadeIn 1.6s .4s both;pointer-events:none}
+.logoBig{position:relative;display:block;flex:none;width:auto;height:auto;max-width:min(86vw,400px);max-height:58vh;animation:logoIn 1.5s cubic-bezier(.2,.9,.25,1) both,logoGlow 2.8s 1.7s ease-in-out infinite}
+.tap{position:relative;font:12px var(--px);letter-spacing:.08em;color:#fff;text-shadow:3px 3px 0 var(--ink);animation:fadeIn .4s 1.4s both,blink 1.1s 1.8s steps(2) infinite}
+.ver{position:relative;font:8px var(--px);letter-spacing:.06em;color:#bfb0d0;text-shadow:2px 2px 0 var(--ink);opacity:.8;text-align:center}
+#titleScr .ver{position:absolute;bottom:calc(var(--sab) + 16px);animation:fadeIn .6s 1.6s both}
+@keyframes logoIn{0%{opacity:0;transform:scale(.35) translateY(40px);filter:brightness(3)}55%{opacity:1;transform:scale(1.07) translateY(-6px);filter:brightness(1.6)}78%{transform:scale(.97)}100%{transform:none;filter:none}}
+@keyframes logoGlow{0%,100%{filter:drop-shadow(0 0 0 rgba(120,240,255,0)) drop-shadow(0 5px 0 rgba(10,6,16,.45))}50%{filter:drop-shadow(0 0 16px rgba(120,240,255,.55)) drop-shadow(0 5px 0 rgba(10,6,16,.45))}}
+@keyframes fadeIn{from{opacity:0}to{opacity:1}}@keyframes blink{50%{opacity:0}}@keyframes spin{to{transform:rotate(360deg)}}
+@media (prefers-reduced-motion:reduce){.logoBig,#titleScr .rays,.tap{animation:none}}
+.mainBtns{display:flex;flex-direction:column;gap:14px;align-items:center;margin-top:6px}
+.mainBtns .big{min-width:240px}
+.big.alt{background:#8fb8ff;box-shadow:inset -4px -4px 0 #3f6fd8,inset 4px 4px 0 #d8e8ff,5px 5px 0 rgba(0,0,0,.55)}
+.big.red{background:#ff8a8a;box-shadow:inset -4px -4px 0 var(--red),inset 4px 4px 0 #ffd0d0,5px 5px 0 rgba(0,0,0,.55)}
+.topRow{display:flex;align-items:center;gap:12px;width:min(420px,100%)}
+.topRow .back{font-size:18px;padding:8px 10px}
+.shopTitle{font:10px var(--px);letter-spacing:.06em;color:var(--gold);text-shadow:2px 2px 0 var(--ink)}
+.opts{display:flex;flex-direction:column;gap:10px}
+.opt{display:grid;grid-template-columns:110px 1fr auto;align-items:center;gap:10px;font:20px var(--vt)}
+.opt b{font:9px var(--px);min-width:28px;text-align:right;color:var(--gold)}
+.opt .tg{grid-column:2/4;justify-self:end;min-width:92px;font-size:20px}
+.opt input[type=range]{-webkit-appearance:none;appearance:none;width:100%;height:12px;background:var(--ink);border:2px solid var(--paper);outline:none}
+.opt input[type=range]::-webkit-slider-thumb{-webkit-appearance:none;width:16px;height:22px;background:var(--gold);border:2px solid var(--ink);box-shadow:inset -3px -3px 0 var(--goldD)}
+.opt input[type=range]::-moz-range-thumb{width:14px;height:20px;background:var(--gold);border:2px solid var(--ink);border-radius:0}
+.optRow{margin-top:6px}
+.cloudBox{display:flex;flex-direction:column;gap:8px;border-top:2px dashed rgba(232,220,200,.25);padding-top:10px}
+.cloudInfo{font:18px var(--vt);color:#d8ccb8;line-height:1.05;text-shadow:2px 2px 0 var(--ink)}
+.cloudInfo.ok{color:#9fe6a0}.cloudInfo.err{color:#ffb0a0}
+.cloudBox a.sec{text-decoration:none;display:inline-block}
+.toast{position:fixed;left:50%;top:calc(var(--sat,0px) + 14px);transform:translate(-50%,-140%);z-index:60;max-width:min(92vw,420px);padding:10px 14px;background:var(--panel);color:var(--paper);border:3px solid var(--gold);box-shadow:0 0 0 2px var(--ink),3px 3px 0 2px rgba(0,0,0,.5);font:20px var(--vt);text-align:center;transition:transform .24s steps(4)}
+.toast.on{transform:translate(-50%,0)}
+@media (max-height:780px){.opts{gap:6px}.opts .opt .tg{padding:5px 10px;font-size:18px;min-width:80px}.opts .optRow .sec{padding:6px 10px;font-size:18px}.cloudBox{gap:5px;padding-top:6px}.cloudInfo{font-size:16px}.opts .optRow{margin-top:2px}}
+@media (max-height:620px){.opts .opt{font-size:18px}.opts .opt .tg{padding:3px 8px}.opts .ver{display:none}}.sec.warn{border-color:#ff9a8a;color:#ffb0a0}
+.confirm{display:flex;flex-direction:column;gap:14px;align-items:center;text-align:center;padding:18px 14px}
+.cfT{font:30px/1 var(--vt);color:var(--gold);text-shadow:2px 2px 0 var(--ink);letter-spacing:.02em}
+.confirm .big{min-width:110px;font:26px var(--vt);padding:10px 18px}
+.opts .ver{font:16px var(--vt);letter-spacing:0;opacity:.75}
+
+.logoimg{display:block;flex:none;width:auto;height:auto;max-width:min(66vw,260px);max-height:31vh;filter:drop-shadow(0 5px 0 rgba(10,6,16,.45))}
+.tag{font:21px/1.1 var(--vt);color:#e8dcc8;text-align:center;max-width:330px;text-shadow:2px 2px 0 var(--ink)}
+.big{min-width:250px;padding:15px 22px;border:3px solid var(--ink);font:13px var(--px);color:var(--ink);background:var(--gold);box-shadow:inset -4px -4px 0 var(--goldD),inset 4px 4px 0 #fff0a8,5px 5px 0 rgba(0,0,0,.55)}
+.big:active{transform:translate(3px,3px);box-shadow:inset -4px -4px 0 var(--goldD),inset 4px 4px 0 #fff0a8,2px 2px 0 rgba(0,0,0,.55)}
+.big.red{background:var(--red);color:#fff;box-shadow:inset -4px -4px 0 var(--redD),inset 4px 4px 0 #ff8a8a,5px 5px 0 rgba(0,0,0,.55)}
+.sec{padding:10px 14px;border:3px solid var(--paper);background:var(--panel);color:var(--paper);font:20px var(--vt);box-shadow:0 0 0 2px var(--ink),3px 3px 0 2px rgba(0,0,0,.5)}
+.row{display:flex;gap:12px;flex-wrap:wrap;justify-content:center}
+.panel{width:min(420px,100%);padding:12px}
+.shopHead{display:flex;justify-content:space-between;align-items:center;font:10px var(--px);letter-spacing:.08em;margin:2px 2px 8px;color:var(--gold);text-shadow:2px 2px 0 var(--ink)}
+.shopHead span{display:flex;align-items:center;gap:7px;color:var(--paper)}
+.upg{display:flex;align-items:center;gap:10px;padding:7px;background:rgba(255,255,255,.05);border:2px solid rgba(246,243,234,.15);margin-top:6px}
+.upg .ic{width:38px;height:38px;flex:none;display:grid;place-items:center;background:#3a2c52;border:2px solid var(--ink)}
+.upg .ic img{width:32px;height:32px;image-rendering:pixelated}
+.upg .tx{flex:1;min-width:0}
+.upg .tx b{font:9px/1.4 var(--px);display:block;color:var(--paper)}
+.upg .tx span{font:18px/1 var(--vt);color:#b8a8d0}
+.buy{border:3px solid var(--ink);padding:8px 9px;min-width:76px;font:10px var(--px);color:var(--ink);background:var(--gold);box-shadow:inset -3px -3px 0 var(--goldD),3px 3px 0 rgba(0,0,0,.5);display:flex;align-items:center;gap:6px;justify-content:center}
+.buy:active{transform:translate(2px,2px);box-shadow:inset -3px -3px 0 var(--goldD)}
+.buy[disabled]{filter:grayscale(1);opacity:.5}
+h1.et{font:clamp(16px,5.6vw,22px)/1.4 var(--px);text-align:center;color:var(--gold);text-shadow:3px 3px 0 var(--ink)}
+.esub{font:22px var(--vt);color:#e8dcc8;text-shadow:2px 2px 0 var(--ink)}
+.stats{width:min(340px,100%)}
+.stats div{display:flex;justify-content:space-between;padding:8px 12px;background:var(--panel);border:2px solid rgba(246,243,234,.25);margin-top:6px;font:21px var(--vt)}
+.stats div b{font:11px var(--px);color:var(--gold);align-self:center}
+.how{text-align:left;font:20px/1.08 var(--vt);color:#e8dcc8}
+.how li{margin:7px 0 7px 18px}
+.how b{color:#fff}
+.noads{font:7px var(--px);letter-spacing:.12em;color:var(--leaf);text-shadow:2px 2px 0 var(--ink)}
+.mboss{display:flex;flex-direction:column;align-items:center;gap:4px;margin:6px 0 2px;font-family:var(--vt);font-size:18px;color:#ffb0a0;text-align:center}
+.mboss b{font-family:var(--px);font-size:9px;color:var(--gold)}
+.daily{margin:4px 0 6px}.daily:disabled{opacity:.5}
+.cards{display:flex;flex-direction:column;gap:10px;width:min(92vw,380px);margin-top:10px}
+.card{display:grid;grid-template-columns:40px 1fr;grid-template-rows:auto auto;column-gap:10px;align-items:center;text-align:left;background:var(--panel);color:var(--paper);border:3px solid var(--gold);box-shadow:0 4px 0 var(--ink);padding:10px 12px;font-family:var(--vt);cursor:pointer}
+.card img{grid-row:1/3;width:40px;height:40px;image-rendering:pixelated}
+.card b{font-family:var(--px);font-size:10px;color:var(--gold);line-height:1.4}
+.card span{font-size:18px;line-height:1.1;color:#e8e0f0}
+.card:active{transform:translateY(2px)}
+#cardScr,#revScr{background:rgba(18,12,24,.82)}
+</style>
+</head>
+<body>
+<canvas id="c" aria-label="Sendero del Orbe"></canvas>
+<div id="crt"></div>
+
+<div id="hud" class="hidden">
+  <div class="top">
+    <button id="bPause" class="ib" type="button" aria-label="Pausa">II</button>
+    <div class="lvbox"><div id="lvText">NIVEL 1</div><div class="prog"><i id="progFill"></i><b>JEFE</b></div></div>
+    <div class="coins"><span class="coin"></span><span id="coinText">0</span></div>
+  </div>
+  <div id="bossBar" class="hidden"><div class="bn">JEFE</div><div class="bb"><i id="bossFill"></i></div></div>
+  <div id="hint"><span>◀ Desliza para mover ▶<br>Dispara a los portales para subir su número</span></div>
+  <div id="weap"><i></i><span id="weapText">FLECHAS NV 1</span></div>
+  <button id="bSlash" type="button" aria-label="Onda mágica"><span>MAGIA</span></button>
+</div>
+
+<div id="titleScr" class="screen hidden" role="button" tabindex="0" aria-label="Pulsa para empezar">
+  <div class="rays"></div>
+  <img class="logoBig" src="__LOGO__" alt="Cuentos del Medioevo · Sendero del Orbe · Primera entrega" width="572" height="656">
+  <div class="tap">PULSA PARA EMPEZAR</div>
+  <div class="ver">CUENTOS DEL MEDIOEVO · I · SIN ANUNCIOS</div>
+</div>
+
+<div id="mainScr" class="screen hidden">
+  <img id="mainLogo" class="logoimg" alt="Sendero del Orbe" width="572" height="656">
+  <div class="mainBtns">
+    <button id="bMainPlay" class="big" type="button">JUGAR</button>
+    <button id="bMainOpt" class="big alt" type="button">OPCIONES</button>
+    <button id="bMainExit" class="big red" type="button">SALIR</button>
+    <button id="bInstall" class="sec hidden" type="button">INSTALAR APP</button>
+  </div>
+</div>
+
+<div id="menu" class="screen hidden">
+  <div class="topRow"><button id="bShopBack" class="sec back" type="button">◀ VOLVER</button><div class="shopTitle">PREPARA TU LEGIÓN</div></div>
+  <button id="bPlay" class="big" type="button">JUGAR · NIVEL <span id="mLv">1</span></button>
+  <div class="mboss"><span id="mBoss"></span><b id="mStars"></b></div>
+  <button id="bDaily" class="sec daily" type="button">DESAFÍO DIARIO</button>
+  <div class="panel pxbox">
+    <div class="shopHead">MEJORAS <span><i class="coin"></i><b id="shopCoins">0</b></span></div>
+    <div id="shopList"></div>
+  </div>
+</div>
+
+<div id="optScr" class="screen hidden">
+  <div class="panel pxbox opts">
+    <div class="shopHead">OPCIONES</div>
+    <label class="opt"><span>Música</span><input id="oMus" type="range" min="0" max="100" step="5"><b id="oMusV">70</b></label>
+    <label class="opt"><span>Efectos</span><input id="oSfx" type="range" min="0" max="100" step="5"><b id="oSfxV">80</b></label>
+    <div class="opt"><span>Sonido</span><button id="bSound" class="sec tg" type="button">Sí</button></div>
+    <div class="opt"><span>Vibración</span><button id="bVib" class="sec tg" type="button">Sí</button></div>
+    <div class="opt"><span>Filtro retro</span><button id="bCrt" class="sec tg" type="button">No</button></div>
+    <div class="opt"><span>Calidad</span><button id="bQual" class="sec tg" type="button">Auto</button></div>
+    <div id="cloudBox" class="cloudBox hidden">
+      <div class="opt"><span>Nube</span><button id="bCloud" class="sec tg" type="button">Google</button></div>
+      <div id="cloudInfo" class="cloudInfo">Guarda tu avance en tu cuenta Google y sigue en otro celular.</div>
+      <div class="row optRow"><button id="bCloudDel" class="sec warn hidden" type="button">Borrar datos nube</button><a id="lPriv" class="sec" href="privacidad.html" target="_blank" rel="noopener">Privacidad</a></div>
+    </div>
+    <div class="row optRow"><button id="bHow" class="sec" type="button">Cómo jugar</button><button id="bReset" class="sec warn" type="button">Borrar progreso</button></div>
+    <div class="ver">Cuentos del Medioevo · Sendero del Orbe · Primera entrega</div>
+  </div>
+  <button id="bOptBack" class="big" type="button">VOLVER</button>
+</div>
+
+<div id="toast" class="toast hidden" role="status" aria-live="polite"></div>
+
+<div id="confirmScr" class="screen hidden">
+  <div class="panel pxbox confirm">
+    <div id="cfTitle" class="cfT">¿ESTÁS SEGURO QUE DESEAS SALIR?</div>
+    <div id="cfSub" class="esub"></div>
+    <div class="row"><button id="bCfYes" class="big red" type="button">SÍ</button><button id="bCfNo" class="big" type="button">NO</button></div>
+  </div>
+</div>
+
+<div id="byeScr" class="screen hidden">
+  <h1 class="et">¡HASTA PRONTO!</h1>
+  <div class="esub">Tu progreso quedó guardado. Ya puedes cerrar esta ventana.</div>
+  <button id="bByeBack" class="sec" type="button">Volver al título</button>
+</div>
+
+<div id="howScr" class="screen hidden">
+  <div class="panel pxbox how">
+    <div class="shopHead">CÓMO JUGAR</div>
+    <ul>
+      <li><b>Desliza</b> el dedo para mover a tu legión. Disparan solos.</li>
+      <li>Portales <b style="color:#7ab0ff">azules</b> suman o multiplican; los <b style="color:#ff7a84">rojos</b> restan. <b>Dispárales</b> para subir su número.</li>
+      <li>Cofres <b>FLECHAS</b> mejoran tus flechas (veneno, fuego, hielo…); cofres <b>ALIADOS</b> suman arqueros. Si no los rompes, aplastan a quien choque con ellos.</li>
+      <li>Los <b>magos</b> hacen daño en área. Los portales con <b style="color:#c8a0ff">sombrero</b> suman magos.</li>
+      <li>Cada tierra tiene sus enemigos: orcos, esqueletos, espíritus y diablillos rápidos, <b>gólems</b> resistentes y <b>goblins arqueros</b> que te disparan: elimínalos rápido.</li>
+      <li>En la orilla izquierda espera un <b>guardián</b> encerrado (Ent, lobos o hipogrifo): dispárale desde la izquierda para liberarlo y pelea a tu lado.</li>
+      <li>Cada 10 niveles cambia el jefe y la tierra; cada 2 niveles el jefe se arma más y aprende ataques nuevos. Sal de las zonas rojas antes del golpe.</li>
+      <li>Lo que pase de 120 tropas va a la <b>reserva</b> y repone bajas. Caballeros aguantan golpes, druidas reponen tropas, catapultas golpean en área.</li>
+      <li>Cofres dorados, la tropa de élite y el guardián te dan <b>bendiciones</b>: elige 1 de 3.</li>
+      <li>Llena el anillo y toca <b>MAGIA</b>: barre la horda, sube los portales y daña al jefe.</li>
+    </ul>
+  </div>
+  <button id="bHowBack" class="big" type="button">ENTENDIDO</button>
+</div>
+
+<div id="pauseScr" class="screen hidden">
+  <h1 class="et">PAUSA</h1>
+  <button id="bResume" class="big" type="button">CONTINUAR</button>
+  <button id="bQuit" class="sec" type="button">Salir al menú</button>
+</div>
+
+<div id="cardScr" class="screen hidden">
+  <h1 class="et">BENDICIÓN</h1>
+  <div class="esub">Elige una</div>
+  <div id="cardList" class="cards"></div>
+</div>
+
+<div id="revScr" class="screen hidden">
+  <h1 class="et">¿REVIVIR?</h1>
+  <div class="esub">Tu legión cayó ante el jefe. Una sola oportunidad por nivel.</div>
+  <button id="bRevYes" class="big" type="button">REVIVIR · <i class="coin"></i><span id="revCost">0</span></button>
+  <button id="bRevNo" class="sec" type="button">Rendirse</button>
+</div>
+
+<div id="endScr" class="screen hidden">
+  <h1 id="eTitle" class="et"></h1>
+  <div id="eSub" class="esub"></div>
+  <div id="eStats" class="stats"></div>
+  <button id="bNext" class="big" type="button"></button>
+  <button id="bToMenu" class="sec" type="button">Mejoras y menú</button>
+</div>

@@ -1,0 +1,23 @@
+<!doctype html><html><body style="margin:0"><script src="pxr9_part.js"></script><script src="chars9.js"></script><script src="dragon10.js"></script><script src="bosses10.js"></script><script>
+function sheetImg(rows,title){const Z=2,G=14,LH=34;let W=0,H=50;const lay=[];
+  for(const rw of rows){const cw=rw.items.map(it=>it.c.width*Z),h=Math.max(...rw.items.map(it=>it.c.height*Z));lay.push([rw,H]);H+=h+LH+26;W=Math.max(W,cw.reduce((a,b)=>a+b+G,0)+20);}
+  const c=document.createElement('canvas');c.width=W;c.height=H;const g=c.getContext('2d');g.imageSmoothingEnabled=false;
+  const bg=g.createLinearGradient(0,0,0,H);bg.addColorStop(0,'#2a2234');bg.addColorStop(1,'#3e3446');g.fillStyle=bg;g.fillRect(0,0,W,H);
+  g.fillStyle='#ffe27a';g.font='bold 22px monospace';g.fillText(title,10,30);
+  for(const [rw,y0] of lay){g.fillStyle='#ffffff';g.font='bold 18px monospace';g.fillText(rw.name,10,y0+20);let x=10;const h=Math.max(...rw.items.map(it=>it.c.height*Z));
+    for(const it of rw.items){const w=it.c.width*Z,ih=it.c.height*Z;g.fillStyle='rgba(0,0,0,.22)';g.fillRect(x,y0+LH,w,h);g.drawImage(it.c,x,y0+LH+h-ih,w,ih);g.fillStyle='#d8cce0';g.font='13px monospace';g.fillText(it.l,x+2,y0+LH+h+16);x+=w+G;}}
+  return c.toDataURL();}
+try{
+ const T5=['sin arma','maza','+ pechera','+ casco','+ aura'];
+ const tier=(fn,labs,rng)=>labs.map((l,i)=>({c:fn(0,0,i).c,l:rng[i]+' · '+l})).concat([{c:fn(0,1,4).c,l:'ataque'}]);
+ const R=(a)=>[0,1,2,3,4].map(i=>'Niv '+(a+i*2)+'-'+(a+i*2+1));
+ const A=[{name:'TROLL DEL BOSQUE (niveles 1-10)',items:tier(troll10,['sin arma','maza','maza + pechera','+ casco','+ aura'],R(1))},
+   {name:'EL NIGROMANTE (11-20)',items:tier(lich10,['sin arma','báculo','+ coraza','+ corona','+ aura'],R(11))},
+   {name:'DRAGÓN DEL OCASO (21-30)',items:tier((p,r,t)=>dragon10(p,r,'obsidiana',t),['sin arma','cola maza','+ armadura','+ yelmo','+ aura'],R(21))},
+   {name:'DEMONIO DEL ABISMO (31-40)',items:tier(demon10,['sin arma','tridente','+ peto','+ yelmo','+ aura'],R(31))}];
+ const B=[{name:'EL JUEZ DICTADOR (41-50)',items:tier(judge10,['libro','mazo','+ peto','+ mitra','+ aura'],R(41))},
+   {name:'EL GUARDIÁN DEL ORBE (51-59) — muta cada 2 niveles',items:[0,1,2,3,4].map(m=>({c:guardian10(0,0,m).c,l:['Niv 51-52','Niv 53-54','Niv 55-56','Niv 57-58','Niv 59'][m]+' · forma '+(m+1)})).concat([{c:guardian10(0,1,4).c,l:'ataque'}])},
+   {name:'CAOS REGENTE (nivel 60 · final)',items:[{c:chaos10(0,0).c,l:'reposo'},{c:chaos10(0,1).c,l:'ataque'}]}];
+ window.OUTA=sheetImg(A,'Progresión de jefes · 1-40');window.OUTB=sheetImg(B,'Progresión de jefes · 41-60');
+}catch(e){window.ERR=e.stack;}window.DONE=1;
+</script></body></html>

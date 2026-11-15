@@ -1,0 +1,8 @@
+<!doctype html><html><body style="margin:0"><script src="pxr9_part.js"></script><script src="chars9.js"></script><script src="dragon10.js"></script><script src="bosses10.js"></script><script src="units10.js"></script><script>
+try{const t0=performance.now();const U=Sprites10();const ms=performance.now()-t0;const t1=performance.now();const B=bossSheets(5,2);const ms2=performance.now()-t1;
+ const items=[...U.sol.map(s=>s.img),...U.zom.map(s=>s.img),U.mini.img,...U.log,...U.boulder,...Object.values(U.props).flat().map(p=>p.img),...Object.values(U.icons)];
+ const Z=3;let W=10,H=10,x=10,y=10,rowH=0;const pos=[];for(const im of items){if(x+im.width*Z>1500){x=10;y+=rowH+12;rowH=0;}pos.push([im,x,y]);x+=im.width*Z+12;rowH=Math.max(rowH,im.height*Z);W=Math.max(W,x);}H=y+rowH+20;
+ const c=document.createElement('canvas');c.width=W;c.height=H;const g=c.getContext('2d');g.imageSmoothingEnabled=false;g.fillStyle='#4a5a3a';g.fillRect(0,0,W,H);
+ for(const [im,x,y] of pos){g.fillStyle='#5a6a48';g.fillRect(x,y,im.width*Z,im.height*Z);g.drawImage(im,x,y,im.width*Z,im.height*Z);}
+ window.MS=ms+' / boss '+ms2;window.OUT=c.toDataURL();}catch(e){window.ERR=e.stack;}window.DONE=1;
+</script></body></html>

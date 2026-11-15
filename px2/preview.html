@@ -1,0 +1,17 @@
+<!DOCTYPE html><html><body style="margin:0;background:#2a2a36"><canvas id="cv"></canvas>
+<script src="../sprites8.js"></script><script src="pxr.js"></script><script src="chars2.js"></script>
+<script>
+const mk=(w,h)=>{const c=document.createElement('canvas');c.width=w;c.height=h;return c;};
+try{const A=Sprites8(mk).build();
+const sc=4,cv=document.getElementById('cv');cv.width=1300;cv.height=800;const g=cv.getContext('2d');g.imageSmoothingEnabled=false;
+g.fillStyle='#5a7a4a';g.fillRect(0,0,cv.width,cv.height);g.font='bold 18px monospace';g.fillStyle='#ffe27a';g.fillText('ANTES',10,22);g.fillText('NUEVA TÉCNICA',430,22);
+const fr=(S,i,x,y,s)=>g.drawImage(S.img,i*S.fw,0,S.fw,S.fh,x,y,S.fw*s,S.fh*s);
+fr(A.ent.stand,5,10,60,4);fr(A.bru[0],0,230,200,4);fr(A.bru[1],0,230,40,4);
+const e=entFront(0);g.drawImage(e,430,50,e.width*4,e.height*4);
+const g1=golem(false,0),g2=golem(true,0);g.drawImage(g1,720,200,g1.width*4,g1.height*4);g.drawImage(g2,720,0,g2.width*4,g2.height*4);
+const e2=entFront(1.2);g.drawImage(e2,940,50,e2.width*4,e2.height*4);
+fr(A.bosses[3].walk,0,10,440,4);fr(A.zom[0],0,360,600,5);
+const d=demonFront(0),d2=demonFront(0,1);g.drawImage(d,430,440,d.width*4,d.height*4);g.drawImage(d2,780,440,d2.width*4,d2.height*4);
+const oh=orcHammer(0);g.drawImage(oh,1150,600,oh.width*5,oh.height*5);
+window.OUT=cv.toDataURL('image/png');}catch(e){window.ERR=String(e.stack||e);}window.DONE=true;
+</script></body></html>

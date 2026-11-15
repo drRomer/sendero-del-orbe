@@ -1,0 +1,18 @@
+<!DOCTYPE html><html><body style="margin:0;background:#3a4a3a">
+<canvas id="cv"></canvas>
+<script src="sprites8.js"></script>
+<script>
+const mk=(w,h)=>{const c=document.createElement('canvas');c.width=w;c.height=h;return c;};
+try{
+const S=Sprites8(mk).build();
+const B=S.bosses;const ic=Object.values(S.icons).map(c=>({img:c,fw:16,fh:16}));
+const rows=[['Arqueros y mago (último cuadro = disparo)',S.sol.slice(0,3).concat([S.sol[5]]),4],['Goblin arquero, esqueleto, diablillo',S.zom.slice(5),4],['Troll: caminar / golpe',[B[0].walk,B[0].raise],2],['Dragón: caminar / golpe',[B[1].walk,B[1].raise],2],['Nigromante: caminar / conjuro',[B[2].walk,B[2].raise],2],['Íconos de la tienda',ic,4]];
+let W=0,H=0;const sc=r=>r[2];
+for(const r of rows){let w=0,h=0;for(const s of r[1]){w+=s.img.width*sc(r)+16;h=Math.max(h,s.fh*sc(r));}W=Math.max(W,w);H+=h+40;}
+const cv=document.getElementById('cv');cv.width=W+20;cv.height=H+10;const g=cv.getContext('2d');g.imageSmoothingEnabled=false;
+g.fillStyle='#5a7a4a';g.fillRect(0,0,cv.width,cv.height);
+let y=10;for(const r of rows){g.fillStyle='#fff';g.font='bold 16px monospace';g.fillText(r[0],10,y+14);y+=22;let x=10,h=0;
+  for(const s of r[1]){g.drawImage(s.img,x,y,s.img.width*sc(r),s.img.height*sc(r));x+=s.img.width*sc(r)+16;h=Math.max(h,s.fh*sc(r));}y+=h+18;}
+window.OUT=cv.toDataURL('image/png');}catch(e){window.ERR=String(e.stack||e);}
+window.DONE=true;
+</script></body></html>

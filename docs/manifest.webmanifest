@@ -1,0 +1,41 @@
+{
+  "id": "./",
+  "name": "Sendero del Orbe · Cuentos del Medioevo",
+  "short_name": "Sendero del Orbe",
+  "description": "Runner medieval 8-bit: guía a tu legión por el Sendero del Orbe, libera guardianes y derrota a los jefes. Sin anuncios.",
+  "lang": "es-CL",
+  "dir": "ltr",
+  "categories": [
+    "games"
+  ],
+  "start_url": "./?src=app",
+  "scope": "./",
+  "display": "fullscreen",
+  "display_override": [
+    "fullscreen",
+    "standalone"
+  ],
+  "orientation": "portrait",
+  "background_color": "#120c18",
+  "theme_color": "#120c18",
+  "icons": [
+    {
+      "src": "icons/icon-192.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "any"
+    },
+    {
+      "src": "icons/icon-512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any"
+    },
+    {
+      "src": "icons/maskable-512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "maskable"
+    }
+  ]
+}

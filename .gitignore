@@ -1,0 +1,11 @@
+# Generados (se reconstruyen con assemble.py / build.py)
+game.js
+index.html
+web/dist/
+# Dependencias y registros
+node_modules/
+web/node_modules/
+*.log
+__pycache__/
+*.pyc
+.DS_Store

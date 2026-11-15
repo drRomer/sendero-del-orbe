@@ -1,0 +1,29 @@
+<!DOCTYPE html><html><body style="margin:0;background:#2a2a36">
+<canvas id="cv"></canvas>
+<script src="sprites8.js"></script>
+<script src="sprites8_new.js"></script>
+<script>
+const mk=(w,h)=>{const c=document.createElement('canvas');c.width=w;c.height=h;return c;};
+try{
+const A=Sprites8(mk).build(),B=Sprites8N(mk).build();
+const fr=(S,i)=>({S,i});
+const rows=[
+ ['Ent (dormido · de pie · camina · golpe)',S=>[fr(S.ent.stand,0),fr(S.ent.stand,5),fr(S.ent.walk,1),fr(S.ent.raise,4)],2],
+ ['Demonio (camina · ataque)',S=>[fr(S.bosses[3].walk,0),fr(S.bosses[3].raise,4)],2],
+ ['Troll (camina · ataque)',S=>[fr(S.bosses[0].walk,0),fr(S.bosses[0].raise,4)],2],
+ ['Nigromante (flota · conjuro)',S=>[fr(S.bosses[2].walk,0),fr(S.bosses[2].raise,4)],2],
+ ['Gólem de lava · orco con casco',S=>[fr(S.bru[1],0),fr(S.bru[1],2),fr(S.zom[1],0),fr(S.zom[1],1)],4],
+];
+const PAD=14,LH=26,COLGAP=40;let W=0,H=10;const lay=[];
+for(const [t,f,sc] of rows){const a=f(A),b=f(B);const wA=a.reduce((s,q)=>s+q.S.fw*sc+8,0),hA=Math.max(...a.map(q=>q.S.fh*sc));lay.push({t,a,b,sc,wA,hA,y:H});H+=LH+hA+PAD;W=Math.max(W,wA*2+COLGAP+20);}
+const icA=Object.values(A.icons),icB=Object.values(B.icons);lay.push({t:'Íconos de la tienda',ic:true,y:H});H+=LH+90;
+const cv=document.getElementById('cv');cv.width=W;cv.height=H+30;const g=cv.getContext('2d');g.imageSmoothingEnabled=false;
+g.fillStyle='#5a7a4a';g.fillRect(0,0,W,H+30);
+g.fillStyle='rgba(0,0,0,.25)';g.fillRect(W/2-2,0,4,H+30);
+g.font='bold 18px monospace';g.fillStyle='#ffe27a';g.fillText('ANTES',10,22);g.fillText('DESPUÉS',W/2+COLGAP/2,22);
+for(const L of lay){const y0=L.y+30;g.fillStyle='#fff';g.font='bold 15px monospace';g.fillText(L.t,10,y0+14);
+  if(L.ic){let x=10;for(const c of icA){g.drawImage(c,x,y0+LH,c.width*3,c.height*3);x+=c.width*3+10;}x=W/2+COLGAP/2;for(const c of icB){g.drawImage(c,x,y0+LH,c.width*3,c.height*3);x+=c.width*3+10;}continue;}
+  for(const [side,list] of [[0,L.a],[1,L.b]]){let x=side?W/2+COLGAP/2:10;for(const q of list){g.drawImage(q.S.img,q.i*q.S.fw,0,q.S.fw,q.S.fh,x,y0+LH,q.S.fw*L.sc,q.S.fh*L.sc);x+=q.S.fw*L.sc+8;}}}
+window.OUT=cv.toDataURL('image/png');}catch(e){window.ERR=String(e.stack||e);}
+window.DONE=true;
+</script></body></html>

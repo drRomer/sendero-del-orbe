@@ -1,0 +1,36 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+
+    // Un documento por jugador, con el id opaco de Firebase (uid). Sin nombre ni correo.
+    match /saves/{uid} {
+      allow read, delete: if isOwner(uid);
+      allow create, update: if isOwner(uid) && validSave(request.resource.data);
+    }
+
+    // Todo lo demás queda cerrado.
+    match /{document=**} {
+      allow read, write: if false;
+    }
+
+    function isOwner(uid) {
+      return request.auth != null && request.auth.uid == uid;
+    }
+
+    function validSave(s) {
+      return s.keys().hasOnly(['v', 'd', 'pt', 't']) && s.keys().hasAll(['v', 'd', 'pt', 't'])
+        && s.v == 1
+        && s.pt is int && s.pt >= 0
+        && s.t == request.time
+        && s.d is map
+        && s.d.keys().hasOnly(['level', 'best', 'coins', 'up', 'stars', 'daily'])
+        && s.d.keys().hasAll(['level', 'best', 'coins', 'up', 'stars', 'daily'])
+        && s.d.level is int && s.d.level >= 1 && s.d.level <= 999
+        && s.d.best is int && s.d.best >= 1 && s.d.best <= 999
+        && s.d.coins is int && s.d.coins >= 0 && s.d.coins <= 1000000000
+        && s.d.up is map && s.d.up.size() <= 16
+        && s.d.stars is map && s.d.stars.size() <= 999
+        && s.d.daily is string && s.d.daily.size() <= 8;
+    }
+  }
+}

@@ -1,0 +1,10 @@
+<!doctype html><html><body style="margin:0;background:#222"><script src="pxr9_part.js"></script><script src="chars9.js"></script><script>
+try{const t0=performance.now();const S=Sprites9();const ms=performance.now()-t0;
+ const rows=[['Arqueros + mago',S.sol.slice(0,3).concat([S.sol[5]])],['Orcos',S.zom.slice(0,3)],['Espíritus, goblin, esqueleto, diablillo',S.zom.slice(3)],['Gólems',S.bru],['Ent: despertar / caminar / golpe',[S.ent.stand,S.ent.walk,S.ent.raise]],['Troll',[S.bosses[0].walk,S.bosses[0].raise]],['Dragón',[S.bosses[1].walk,S.bosses[1].raise]],['Nigromante',[S.bosses[2].walk,S.bosses[2].raise]],['Demonio',[S.bosses[3].walk,S.bosses[3].raise]]];
+ const Z=3,PADX=10;let H=0,Wd=0;const lay=[];
+ for(const [lab,ss] of rows){let x=PADX,h=0;const it=[];for(const s of ss){if(x+s.img.width*Z>2600){H+=h+8;x=PADX;h=0;}it.push([s,x,H+20]);x+=s.img.width*Z+18;h=Math.max(h,s.fh*Z+20);Wd=Math.max(Wd,x);}lay.push([lab,it]);H+=h+12;}
+ const c=document.createElement('canvas');c.width=Wd;c.height=H;const g=c.getContext('2d');g.fillStyle='#4a5a3a';g.fillRect(0,0,c.width,c.height);g.imageSmoothingEnabled=false;
+ for(const [lab,it] of lay){g.fillStyle='#fff';g.font='14px monospace';g.fillText(lab,PADX,it[0][2]-5);for(const [s,x,y] of it){g.fillStyle='#5a6a48';g.fillRect(x,y,s.img.width*Z,s.fh*Z);g.drawImage(s.img,x,y,s.img.width*Z,s.fh*Z);
+   if(s.mxs)for(let i=0;i<s.n;i++){g.fillStyle='#f0f';g.fillRect(x+(i*s.fw+s.mxs[i])*Z,y+s.mys[i]*Z,2,2);}g.fillStyle='rgba(255,255,0,.6)';for(let i=0;i<s.n;i++)g.fillRect(x+(i*s.fw)*Z,y+s.ay*Z,s.fw*Z,1);}}
+ window.MS=ms;window.OUT=c.toDataURL();}catch(e){window.ERR=e.stack;}window.DONE=1;
+</script></body></html>

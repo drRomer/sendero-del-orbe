@@ -1,0 +1,14 @@
+<!doctype html><html><body style="margin:0"><script src="pxr9_part.js"></script><script src="chars9.js"></script><script src="dragon10.js"></script><script>
+try{const cyc=(n,fn)=>Array.from({length:n},(_,f)=>fn(f));const T=Math.PI*2;
+ const walk=cyc(4,f=>dragon10(f/4*T,0)),raise=cyc(5,f=>dragon10(0,f/4)),alt=['veneno','carmesi'].map(p=>dragon10(0,0,p)),old=dragon9(0,0).c;
+ const fw=walk[0].c.width,fh=walk[0].c.height,Z=3,G=12;
+ const W=Math.max(5*(fw*Z+G),4*(fw*Z+G))+20,H=20+(fh*Z+30)*3+fh*2+60;
+ const c=document.createElement('canvas');c.width=W;c.height=H;const g=c.getContext('2d');g.imageSmoothingEnabled=false;
+ const bg=g.createLinearGradient(0,0,0,H);bg.addColorStop(0,'#3a2448');bg.addColorStop(.5,'#8a4a52');bg.addColorStop(1,'#c07a4a');g.fillStyle=bg;g.fillRect(0,0,W,H);
+ g.font='16px monospace';g.fillStyle='#fff';
+ const row=(lab,arr,y)=>{g.fillText(lab,10,y-6);arr.forEach((d,i)=>{const im=d.c||d;g.fillStyle='rgba(0,0,0,.18)';g.fillRect(10+i*(fw*Z+G),y,fw*Z,fh*Z);g.drawImage(im,10+i*(fw*Z+G),y,im.width*Z,im.height*Z);});g.fillStyle='#fff';};
+ let y=26;row('Caminar',walk,y);y+=fh*Z+30;row('Ataque (ruge y escupe fuego)',raise,y);y+=fh*Z+30;
+ g.fillText('Otras escamas: veneno · carmesí   |   antes',10,y-6);alt.forEach((d,i)=>g.drawImage(d.c,10+i*(fw*Z+G),y,fw*Z,fh*Z));g.globalAlpha=.85;g.drawImage(old,10+2*(fw*Z+G)+40,y+10,old.width*Z*.85,old.height*Z*.85);g.globalAlpha=1;
+ y+=fh*Z+30;g.fillText('Tamaño real en el juego',10,y-6);walk.concat(raise).forEach((d,i)=>g.drawImage(d.c,10+i*(fw+8),y));
+ window.OUT=c.toDataURL();}catch(e){window.ERR=e.stack;}window.DONE=1;
+</script></body></html>

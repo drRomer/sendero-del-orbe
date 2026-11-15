@@ -1,0 +1,63 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="theme-color" content="#120c18">
+<meta http-equiv="Content-Security-Policy" content="default-src 'self'; style-src 'self' 'unsafe-inline'; img-src 'self'; font-src 'self'; script-src 'none'; object-src 'none'; base-uri 'self'; form-action 'none'">
+<meta name="referrer" content="strict-origin-when-cross-origin">
+<title>Privacidad · Sendero del Orbe</title>
+<link rel="icon" href="icons/favicon-64.png">
+<style>
+@font-face{font-family:'VT323';src:url(fonts/vt323.woff2) format('woff2');font-display:swap}
+@font-face{font-family:'Press Start 2P';src:url(fonts/press-start-2p.woff2) format('woff2');font-display:swap}
+:root{color-scheme:dark}
+body{margin:0;background:#120c18;color:#e8dcc8;font:22px/1.25 'VT323',monospace;padding:calc(env(safe-area-inset-top,0px) + 20px) 18px 40px}
+main{max-width:680px;margin:0 auto}
+h1{font:16px/1.6 'Press Start 2P',monospace;color:#f4c55a;text-shadow:3px 3px 0 #000;margin:0 0 4px}
+h2{font:11px/1.6 'Press Start 2P',monospace;color:#9fe6ff;margin:26px 0 6px}
+p,li{margin:6px 0}ul{padding-left:22px}
+.muted{opacity:.7}
+a{color:#f4c55a}
+.box{border:3px solid #e8dcc8;box-shadow:0 0 0 2px #000,4px 4px 0 2px rgba(0,0,0,.5);background:#24183a;padding:12px 16px;margin-top:14px}
+.back{display:inline-block;margin-top:26px;padding:10px 16px;border:3px solid #e8dcc8;background:#24183a;color:#e8dcc8;text-decoration:none}
+</style>
+</head>
+<body>
+<main>
+<h1>PRIVACIDAD</h1>
+<div class="muted">Sendero del Orbe · Cuentos del Medioevo · actualizado el 15-11-2026</div>
+
+<div class="box">
+<p><b>En corto:</b> sin anuncios, sin analítica y sin cookies de seguimiento. Tu progreso queda en tu celular. Si activas la nube, guardamos solo tu progreso, asociado a un identificador interno de tu cuenta.</p>
+</div>
+
+<h2>EN TU DISPOSITIVO</h2>
+<p>El juego guarda tu progreso y tus opciones (volumen, filtro, calidad) en el almacenamiento local del navegador. Esa información no sale de tu celular salvo que actives la nube.</p>
+
+<h2>GUARDADO EN LA NUBE (OPCIONAL)</h2>
+<ul>
+<li>Si tocas <b>Google</b> en Opciones, inicias sesión con Firebase Authentication (Google).</li>
+<li>En Cloud Firestore guardamos un único documento con tu progreso: nivel, mejor nivel, monedas, mejoras, estrellas y la fecha del último desafío diario. Se identifica con el id interno de tu cuenta, no con tu nombre.</li>
+<li>En esa base <b>no</b> guardamos tu nombre, correo, foto, ubicación ni contactos.</li>
+<li>Firebase Authentication sí conserva el correo de tu cuenta Google para gestionar el inicio de sesión. No lo usamos para nada más ni lo compartimos.</li>
+<li>Las opciones del dispositivo no se suben a la nube.</li>
+</ul>
+
+<h2>SERVICIOS QUE INTERVIENEN</h2>
+<p>El sitio se sirve desde GitHub Pages (GitHub, Inc.) y la nube corre en Google Firebase (Google LLC). Como cualquier servidor, pueden registrar datos técnicos de conexión, como la dirección IP, para operar y proteger sus servicios. Las fuentes y archivos del juego se cargan desde este mismo sitio.</p>
+
+<h2>CUÁNTO TIEMPO Y CÓMO BORRAR</h2>
+<ul>
+<li>La copia en la nube se mantiene mientras no la borres.</li>
+<li><b>Opciones → Borrar datos nube</b> elimina tu copia y tu cuenta del juego en Firebase.</li>
+<li><b>Opciones → Borrar progreso</b> reinicia el progreso de tu celular. También puedes desinstalar la app o borrar los datos del sitio en tu navegador.</li>
+</ul>
+
+<h2>TUS DERECHOS Y CONTACTO</h2>
+<p>Puedes pedir acceso, rectificación o eliminación de tus datos conforme a la Ley N° 19.628 sobre protección de la vida privada. Escríbenos abriendo un aviso en <a href="https://github.com/tomispongge/sendero-del-orbe/issues" rel="noopener">el repositorio del juego</a>. No incluyas datos personales en el aviso: basta con indicar qué necesitas.</p>
+
+<a class="back" href="./">◀ Volver al juego</a>
+</main>
+</body>
+</html>

@@ -1,0 +1,17 @@
+<!doctype html><html><body style="margin:0"><script src="pxr9_part.js"></script><script src="chars9.js"></script><script src="dragon10.js"></script><script src="bosses10.js"></script><script>
+try{const Z=2,G=14;const F=[0,1,2,3,4].map(m=>guardian11(0,0,m).c),A=[0,2,4].map(m=>guardian11(0,1,m).c),E=[0,1,2,3,4].map(m=>eggClose(m,0)).concat([eggClose(4,0,true)]);
+ const fw=F[0].width*Z,fh=F[0].height*Z,ew=E[0].width*4,eh=E[0].height*4;
+ const W=Math.max(5*(fw+G),6*(ew+G))+20,H=60+fh+40+fh+40+eh+80;
+ const c=document.createElement('canvas');c.width=W;c.height=H;const g=c.getContext('2d');g.imageSmoothingEnabled=false;
+ const bg=g.createLinearGradient(0,0,0,H);bg.addColorStop(0,'#241c2e');bg.addColorStop(1,'#3a2e42');g.fillStyle=bg;g.fillRect(0,0,W,H);
+ g.fillStyle='#ffe27a';g.font='bold 22px monospace';g.fillText('EL GUARDIÁN DEL ORBE (51-59) — custodia el Huevo del Caos',10,30);
+ const lab=(t,x,y)=>{g.fillStyle='#d8cce0';g.font='13px monospace';g.fillText(t,x,y);};
+ let y=48;const L1=['51-52 · 4 sellos','53-54 · 3 sellos','55-56 · 2 sellos, 4 brazos','57-58 · 1 sello, alas','59 · sin sellos, huevo libre'];
+ F.forEach((im,i)=>{const x=10+i*(fw+G);g.fillStyle='rgba(0,0,0,.22)';g.fillRect(x,y,fw,fh);g.drawImage(im,x,y,fw,fh);lab(L1[i],x+2,y+fh+16);});
+ y+=fh+40;g.fillStyle='#fff';g.font='bold 16px monospace';g.fillText('Ataque (alza el huevo)',10,y-8);
+ A.forEach((im,i)=>{const x=10+i*(fw+G);g.fillStyle='rgba(0,0,0,.22)';g.fillRect(x,y,fw,fh);g.drawImage(im,x,y,fw,fh);lab(['forma 1','forma 3','forma 5'][i],x+2,y+fh+16);});
+ y+=fh+40;g.fillStyle='#fff';g.font='bold 16px monospace';g.fillText('El Huevo del Caos: se rompe un sello por forma → al vencerlo eclosiona (nivel 60)',10,y-8);
+ const L2=['4 sellos','3 sellos','2 sellos','1 sello','sin sellos','eclosión → Caos'];
+ E.forEach((im,i)=>{const x=10+i*(ew+G);g.fillStyle='rgba(0,0,0,.22)';g.fillRect(x,y,ew,eh);g.drawImage(im,x,y,ew,eh);lab(L2[i],x+2,y+eh+16);});
+ window.OUT=c.toDataURL();}catch(e){window.ERR=e.stack;}window.DONE=1;
+</script></body></html>

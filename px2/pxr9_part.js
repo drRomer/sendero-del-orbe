@@ -1,0 +1,67 @@
+// pxr.js — pintor de pixel art con volumen: primitivas con normales, una luz, rampas de color,
+// texturas (vetas, facetas), sombras de contacto y contorno selectivo.
+function PXR(W0,H0,sc){sc=sc||1;const W=Math.ceil(W0*sc),H=Math.ceil(H0*sc),Z=v=>v*sc;
+  const N=W*H,mat=new Int16Array(N).fill(-1),pid=new Int16Array(N).fill(-1),zo=new Float32Array(N).fill(-1e9);
+  const nx=new Float32Array(N),ny=new Float32Array(N),nz=new Float32Array(N),uu=new Float32Array(N),vv=new Float32Array(N);
+  const em=[];let parts=0;
+  const L=(()=>{const x=-.55,y=-.68,z=.62,l=Math.hypot(x,y,z);return [x/l,y/l,z/l];})();
+  const put=(i,m,p,z,a,b,c,u,v)=>{if(z<zo[i])return;zo[i]=z;mat[i]=m;pid[i]=p;const l=Math.hypot(a,b,c)||1;nx[i]=a/l;ny[i]=b/l;nz[i]=c/l;uu[i]=u;vv[i]=v;};
+  const o={W,H,L,
+    // extremidad cónica (cápsula) — m: material, z: orden
+    cap(x0,y0,x1,y1,r0,r1,m,z){x0=Z(x0);y0=Z(y0);x1=Z(x1);y1=Z(y1);r0=Math.max(.5,Z(r0));r1=Math.max(.5,Z(r1));const p=parts++,dx=x1-x0,dy=y1-y0,ll=dx*dx+dy*dy||1,len=Math.sqrt(ll),R=Math.max(r0,r1)+1;
+      const xa=Math.max(0,Math.floor(Math.min(x0,x1)-R)),xb=Math.min(W-1,Math.ceil(Math.max(x0,x1)+R)),ya=Math.max(0,Math.floor(Math.min(y0,y1)-R)),yb=Math.min(H-1,Math.ceil(Math.max(y0,y1)+R));
+      for(let y=ya;y<=yb;y++)for(let x=xa;x<=xb;x++){const px=x+.5,py=y+.5;let t=((px-x0)*dx+(py-y0)*dy)/ll;t=t<0?0:t>1?1:t;
+        const cx=x0+dx*t,cy=y0+dy*t,r=r0+(r1-r0)*t,ex=px-cx,ey=py-cy,d=Math.hypot(ex,ey);if(d>r)continue;
+        const k=d/r,h=Math.sqrt(Math.max(0,1-k*k)),sg=(dx*ey-dy*ex)>=0?1:-1;put(y*W+x,m,p,z,(ex/(d||1))*k,(ey/(d||1))*k,h,t*len,sg*d);}return p;},
+    // masa elíptica rotada
+    blob(cx,cy,rx,ry,m,z,rot){cx=Z(cx);cy=Z(cy);rx=Math.max(.6,Z(rx));ry=Math.max(.6,Z(ry));const p=parts++,c=Math.cos(rot||0),s=Math.sin(rot||0),R=Math.max(rx,ry)+1;
+      for(let y=Math.max(0,Math.floor(cy-R));y<=Math.min(H-1,Math.ceil(cy+R));y++)for(let x=Math.max(0,Math.floor(cx-R));x<=Math.min(W-1,Math.ceil(cx+R));x++){
+        const px=x+.5-cx,py=y+.5-cy,lx=px*c+py*s,ly=-px*s+py*c,q=(lx/rx)**2+(ly/ry)**2;if(q>1)continue;
+        const a=lx/rx,b=ly/ry,h=Math.sqrt(Math.max(0,1-q));put(y*W+x,m,p,z,a*c-b*s,a*s+b*c,h,ly,lx);}return p;},
+    // polígono con bisel (cuernos, garras, alas)
+    poly(pts,m,z,bev){pts=pts.map(q=>[Z(q[0]),Z(q[1])]);const p=parts++;bev=Math.max(1,Z(bev||2));let xa=1e9,xb=-1e9,ya=1e9,yb=-1e9;for(const q of pts){xa=Math.min(xa,q[0]);xb=Math.max(xb,q[0]);ya=Math.min(ya,q[1]);yb=Math.max(yb,q[1]);}
+      for(let y=Math.max(0,Math.floor(ya));y<=Math.min(H-1,Math.ceil(yb));y++)for(let x=Math.max(0,Math.floor(xa));x<=Math.min(W-1,Math.ceil(xb));x++){
+        const px=x+.5,py=y+.5;let inside=false,best=1e9,bx=0,by=0;
+        for(let i=0,j=pts.length-1;i<pts.length;j=i++){const [xi,yi]=pts[i],[xj,yj]=pts[j];if(((yi>py)!==(yj>py))&&(px<(xj-xi)*(py-yi)/(yj-yi)+xi))inside=!inside;
+          const ex=xj-xi,ey=yj-yi,el=ex*ex+ey*ey||1;let t=((px-xi)*ex+(py-yi)*ey)/el;t=t<0?0:t>1?1:t;const qx=xi+ex*t-px,qy=yi+ey*t-py,d=Math.hypot(qx,qy);if(d<best){best=d;bx=-qx/(d||1);by=-qy/(d||1);}}
+        if(!inside)continue;const k=Math.min(1,best/bev);put(y*W+x,m,p,z,-bx*(1-k),-by*(1-k),.35+k,px,py);}return p;},
+    glow(x,y,col){em.push([Math.round(Z(x)),Math.round(Z(y)),col]);},
+    render(M,opt){opt=opt||{};const c=document.createElement('canvas');c.width=W;c.height=H;const g=c.getContext('2d'),id=g.createImageData(W,H),D=id.data;
+      const hex=h=>[parseInt(h.slice(1,3),16),parseInt(h.slice(3,5),16),parseInt(h.slice(5,7),16)];
+      const RM=M.map(mm=>({...mm,rc:mm.ramp.map(hex)}));const lvl=new Int8Array(N).fill(-1);
+      const hash=(a,b)=>{let h=Math.imul(a*374761393+b*668265263,1274126177);h^=h>>>13;return((h>>>0)%10000)/10000;};
+      for(let i=0;i<N;i++){const m=mat[i];if(m<0)continue;const MM=RM[m],x=i%W,y=(i/W)|0;let a=nx[i],b=ny[i],cz=nz[i];
+        if(MM.tex==='bark'){const gr=Math.sin(vv[i]*1.9+hash(Math.floor(uu[i]/3),m)*4)*.55;a+=gr*.32;b+=gr*.12;}
+        if(MM.tex==='rock'){const cs=Math.max(2,(MM.cs||5)*sc),gx=Math.floor(x/cs),gy=Math.floor(y/cs);let d1=1e9,d2=1e9,cid=0;
+          for(let j=-1;j<=1;j++)for(let k=-1;k<=1;k++){const cx=(gx+j+hash(gx+j,gy+k))*cs,cy=(gy+k+hash(gy+k+7,gx+j+3))*cs,d=Math.hypot(x-cx,y-cy);if(d<d1){d2=d1;d1=d;cid=(gx+j)*131+(gy+k);}else if(d<d2)d2=d;}
+          a+=(hash(cid,1)-.5)*.6;b+=(hash(cid,2)-.5)*.6;if(d2-d1<1.1){cz*=.45;}}
+        if(MM.tex==='scale'){const cw=Math.max(3,(MM.cs||4)*sc),ch=cw*.75,row=Math.floor(y/ch),off=(row&1)?cw/2:0,lx=((x+off)%cw)-cw/2+.5,ly=(y%ch)+.5,d=Math.hypot(lx,ly)/cw;a+=lx/cw*.35;b+=(ly/ch-.5)*.25;if(d>.5&&d<.68)cz*=.72;}
+        if(MM.tex==='leaf'){const q=hash(x>>1,y>>1);a+=(q-.5)*.6;b+=(hash(y>>1,x>>1)-.5)*.6;}
+        const l=Math.hypot(a,b,cz)||1;let s=(a*L[0]+b*L[1]+cz*L[2])/l;s=Math.max(0,s);s=(opt.soft!=null?opt.soft:.36)+s*(1-(opt.soft!=null?opt.soft:.36))*.92+(MM.bias||0);
+        if(opt.dither){const bay=[[0,2],[3,1]][y&1][x&1]/4-.375;s+=bay*.09;}
+        lvl[i]=Math.max(0,Math.min(MM.rc.length-1,Math.floor(s*MM.rc.length)));}
+      // sombras de contacto: la parte de atrás se oscurece junto a la de adelante
+      const lv2=Int8Array.from(lvl);
+      for(let i=0;i<N;i++){if(mat[i]<0)continue;const x=i%W;for(const j of [i-1,i+1,i-W,i+W]){if(j<0||j>=N||(j===i-1&&x===0)||(j===i+1&&x===W-1))continue;if(mat[j]>=0&&pid[j]!==pid[i]&&zo[j]>zo[i]+.01){lv2[i]=Math.max(0,lvl[i]-1);break;}}}
+      for(let i=0;i<N;i++){if(mat[i]<0)continue;const col=RM[mat[i]].rc[lv2[i]];D[i*4]=col[0];D[i*4+1]=col[1];D[i*4+2]=col[2];D[i*4+3]=255;}
+      // contorno selectivo: oscuro del material vecino
+      const OUT=hex(opt.outline||'#120a14');
+      for(let i=0;i<N;i++){if(mat[i]>=0)continue;const x=i%W;let nb=-1;for(const j of [i-1,i+1,i-W,i+W]){if(j<0||j>=N||(j===i-1&&x===0)||(j===i+1&&x===W-1))continue;if(mat[j]>=0){nb=j;break;}}
+        if(nb<0)continue;const d=RM[mat[nb]].rc[0];D[i*4]=(d[0]*.45+OUT[0]*.55)|0;D[i*4+1]=(d[1]*.45+OUT[1]*.55)|0;D[i*4+2]=(d[2]*.45+OUT[2]*.55)|0;D[i*4+3]=255;}
+      // aura: halo de llamas fuera de la silueta (sube más de lo que baja)
+      if(opt.aura){const A=opt.aura,M3=(A.w||3)*3,cost=new Int16Array(N).fill(32767),B=[];for(let c=0;c<=M3;c++)B.push([]);
+        for(let i=0;i<N;i++)if(D[i*4+3]>0){cost[i]=0;B[0].push(i);}
+        const nb=[[0,-1,2],[-1,0,3],[1,0,3],[0,1,4],[-1,-1,3],[1,-1,3],[-1,1,5],[1,1,5]];
+        for(let c=0;c<=M3;c++)for(const i of B[c]){if(cost[i]<c)continue;const x=i%W,y=(i/W)|0;for(const [dx,dy,k] of nb){const xx=x+dx,yy=y+dy;if(xx<0||yy<0||xx>=W||yy>=H)continue;const j=yy*W+xx,nc=c+k;if(nc<=M3&&nc<cost[j]){cost[j]=nc;B[nc].push(j);}}}
+        const ac=A.c.map(hex),sd=A.seed||0;
+        for(let i=0;i<N;i++){const c=cost[i];if(c<=0||c>M3||D[i*4+3]>0)continue;const x=i%W,y=(i/W)|0,f=c/M3,jg=hash(x*3+sd*7,y+sd*13);if(f>.4&&jg<(f-.4)*1.7)continue;
+          const k=f<.4?0:f<.72?1:2,cc=ac[Math.min(k,ac.length-1)],al=[.85,.55,.3][k];D[i*4]=cc[0];D[i*4+1]=cc[1];D[i*4+2]=cc[2];D[i*4+3]=Math.round(al*255);}}
+      for(const [x,y,colr] of em){if(x<0||y<0||x>=W||y>=H)continue;const i=y*W+x,cc=hex(colr);D[i*4]=cc[0];D[i*4+1]=cc[1];D[i*4+2]=cc[2];D[i*4+3]=255;}
+      g.putImageData(id,0,0);return c;},
+    matAt(x,y){x=Math.round(Z(x));y=Math.round(Z(y));if(x<0||y<0||x>=W||y>=H)return -1;return mat[y*W+x];}
+  };return o;}
+
+// PXR con margen: mismas coordenadas, lienzo más grande (para auras y alas)
+function PXRw(W,H,p,sc){const o0=PXR(W+2*p,H+2*p,sc);return {W:o0.W,H:o0.H,pad:p,
+  cap:(x0,y0,x1,y1,r0,r1,m,z)=>o0.cap(x0+p,y0+p,x1+p,y1+p,r0,r1,m,z),blob:(cx,cy,rx,ry,m,z,rot)=>o0.blob(cx+p,cy+p,rx,ry,m,z,rot),
+  poly:(P,m,z,b)=>o0.poly(P.map(q=>[q[0]+p,q[1]+p]),m,z,b),glow:(x,y,c)=>o0.glow(x+p,y+p,c),matAt:(x,y)=>o0.matAt(x+p,y+p),render:(M,o)=>o0.render(M,o)};}
