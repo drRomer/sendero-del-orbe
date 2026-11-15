@@ -1,8 +1,8 @@
 // Service worker de Sendero del Orbe: juego disponible sin conexión.
 // HTML y config: red primero (siempre la última versión si hay señal). Resto: caché primero.
-const VERSION = '20261115-81494d';
+const VERSION = '20261115-9c1396';
 const CACHE = 'sdo-' + VERSION;
-const PRECACHE = ["./", "index.html", "config.js", "web.js?v=20261115-81494d", "cloud.js?v=20261115-81494d", "manifest.webmanifest", "fonts/press-start-2p.woff2", "fonts/vt323.woff2", "icons/icon-192.png", "icons/icon-512.png", "icons/favicon-64.png", "privacidad.html"];
+const PRECACHE = ["./", "index.html", "config.js", "web.js?v=20261115-9c1396", "cloud.js?v=20261115-9c1396", "manifest.webmanifest", "fonts/press-start-2p.woff2", "fonts/vt323.woff2", "icons/icon-192.png", "icons/icon-512.png", "icons/favicon-64.png", "privacidad.html"];
 
 self.addEventListener('install', (e) => {
   e.waitUntil(

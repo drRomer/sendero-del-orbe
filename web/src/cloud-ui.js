@@ -10,7 +10,7 @@ export function mountCloud({sdo,auth,backend,doc=document,win=window}){
   const box=$('cloudBox'),btn=$('bCloud'),info=$('cloudInfo'),del=$('bCloudDel');
   if(!sdo||!box||!btn||!info||!del)return null;
   box.classList.remove('hidden');
-  let user=null,st={status:'off'},working=false;
+  let user=null,st={status:'off'},working=false,opening=false;
 
   const sync=createSync({sdo,backend,onState:s=>{st=s;render();}});
   sdo.onChange(()=>sync.schedule());
@@ -42,9 +42,10 @@ export function mountCloud({sdo,auth,backend,doc=document,win=window}){
       try{await sync.flush();}catch(e){}
       try{await auth.logout();}catch(e){sdo.toast(errText(e));}
     },'SALIR','CANCELAR');return;}
-    working=true;say('Abriendo Google…');
-    try{await auth.login();working=false;render();}
-    catch(e){working=false;render();if(!CANCEL.includes(e&&e.code))say(errText(e),'err');}
+    working=opening=true;say('Abriendo Google…');
+    try{await auth.login();}
+    catch(e){if(!CANCEL.includes(e&&e.code)){working=opening=false;render();say(errText(e),'err');return;}}
+    working=opening=false;render();
   });
 
   del.addEventListener('click',()=>{
@@ -59,6 +60,9 @@ export function mountCloud({sdo,auth,backend,doc=document,win=window}){
   });
 
   const again=async()=>{if(user)report(await sync.resync());};
+  // Si cierras la ventana de Google sin entrar, Firebase tarda ~10 s en avisar (Google bloquea window.closed):
+  // al volver al juego se libera el botón antes.
+  win.addEventListener('focus',()=>{if(opening)win.setTimeout(()=>{if(opening){working=opening=false;render();}},1500);});
   win.addEventListener('online',again);
   doc.addEventListener('visibilitychange',()=>{if(doc.visibilityState==='hidden')sync.flush();else again();});
   win.addEventListener('pagehide',()=>sync.flush());
