@@ -2,7 +2,7 @@
 
 Runner medieval 8-bit en HTML5 Canvas. Primera entrega de la saga *Cuentos del Medioevo*.
 
-**Jugar:** https://tomispongge.github.io/sendero-del-orbe/ — se instala como app desde el navegador, funciona sin conexión y puede guardar el progreso en la nube con Google.
+**Jugar:** https://drromer.github.io/sendero-del-orbe/ — se instala como app desde el navegador, funciona sin conexión y puede guardar el progreso en la nube con Google.
 
 ## Estructura
 
@@ -40,7 +40,7 @@ GitHub → *Settings* → *Pages* → *Deploy from a branch* → `main` / `/docs
 
 ## Guardado en la nube (Firebase)
 
-1. Crear un proyecto en Firebase y habilitar **Authentication → Google**. En *Dominios autorizados*, agregar `tomispongge.github.io`.
+1. Crear un proyecto en Firebase y habilitar **Authentication → Google**. En *Dominios autorizados*, agregar `drromer.github.io`.
 2. Crear **Firestore** en modo producción y publicar las reglas de `web/firebase/firestore.rules`.
 3. Registrar una app web y pegar su `firebaseConfig` en `web/static/config.js`. Luego ejecutar `python3 build_web.py`.
 

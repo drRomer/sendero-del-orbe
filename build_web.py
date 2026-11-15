@@ -13,8 +13,8 @@ HERE = os.path.dirname(os.path.abspath(__file__))
 sys.path.insert(0, HERE)
 from build import compose
 
-SITE = os.environ.get('SDO_SITE_URL', 'https://tomispongge.github.io/sendero-del-orbe/')
-REPO = os.environ.get('SDO_REPO_URL', 'https://github.com/tomispongge/sendero-del-orbe')
+SITE = os.environ.get('SDO_SITE_URL', 'https://drromer.github.io/sendero-del-orbe/')
+REPO = os.environ.get('SDO_REPO_URL', 'https://github.com/drRomer/sendero-del-orbe')
 WEB = os.path.join(HERE, 'web')
 STATIC = os.path.join(WEB, 'static')
 FAKE = '--fake-cloud' in sys.argv

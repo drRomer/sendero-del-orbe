@@ -41,7 +41,7 @@
 - Pruebas: bot3/pubcheck navegan titleScr → bMainPlay → bPlay.
 
 ## Versión web propia (PWA + nube) — build_web.py → docs/
-- Repo pensado para GitHub Pages (main /docs) en tomispongge/sendero-del-orbe. base/game_v2.js vendorizado (assemble.py ya no depende de /home/claude/game).
+- Repo pensado para GitHub Pages (main /docs) en drRomer/sendero-del-orbe. base/game_v2.js vendorizado (assemble.py ya no depende de /home/claude/game).
 - parts/v3f.js: persist() marca save.pt solo si cambia el progreso (no las opciones); save.cu/save.cb = uid vinculado + huella base. window.SDO (progress/apply/clean/rank/linked/setLinked/onChange/toast/confirm). Toast #toast. Botón INSTALAR (beforeinstallprompt / guía iOS). Pantalla completa al pulsar el título en celular (solo web).
 - web/src: cloud-core.js (mezcla a 3 vías: base=huella del último sync; primera vez gana el más avanzado [best, estrellas, mejoras, monedas]; no aplica nube en partida), cloud-ui.js (Opciones: Google/Salir, correo enmascarado, Borrar datos nube = deleteDoc + deleteUser), cloud.js (Firebase Auth popup→redirect + Firestore Lite), cloud-fake.js (solo pruebas).
 - Firestore: saves/{uid} = {v:1, d:{level,best,coins,up,stars,daily}, pt, t:serverTimestamp}. Reglas en web/firebase/firestore.rules (dueño únicamente, campos y rangos validados, resto cerrado). Sin nombre ni correo.
