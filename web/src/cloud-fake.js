@@ -19,3 +19,13 @@ const auth={
 };
 window.__fakeCloud={login:()=>auth.login()};
 mountCloud({sdo:window.SDO,auth,backend});
+// Tabla simulada para probar la interfaz
+{const sample=[['ROM',61.4,3,60,'b6'],['ANA',48.2,9,46,'b4'],['ZED',33.9,0,28,'b2'],['MAX',40.7,22,40,'kill'],['LUZ',12.1,1,11,'b1'],['KAI',25.5,14,24,''],['SOL',5.2,0,5,'tut']];
+  const rows=sample.map(([n,km,d,lv,ti])=>({n,km,d,lv,ti,s:lv?Math.round(km*lv/(lv+d/2)*1000)/1000:0}));let mine=null;
+  const val=(r,f)=>r[f];
+  window.SDO_LB=Object.freeze({ready:()=>true,
+    async post(e){await wait(60);mine=Object.assign({me:true},e);return true;},
+    async top(f,dir){await wait(60);const all=rows.concat(mine?[mine]:[]);return all.slice().sort((a,b)=>dir==='asc'?val(a,f)-val(b,f):val(b,f)-val(a,f)).slice(0,50);},
+    async mine(){return mine;},
+    async rank(f,dir,v){const all=rows.concat(mine?[mine]:[]);return all.filter(r=>dir==='asc'?r[f]<v:r[f]>v).length+1;}});
+  window.dispatchEvent(new Event('sdo_lb'));}

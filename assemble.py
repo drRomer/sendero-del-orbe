@@ -14,10 +14,10 @@ rep("Brigada del Puente v2 — runner/shooter de escuadrón (original)","Legión
 rep("Render: Canvas 2D con proyección pseudo-3D (cámara inclinada)","Render: Canvas 2D a baja resolución (pixel art) con proyección pseudo-3D")
 span("const WCOL=[","\n","const WCOL=['216,200,160','120,255,140','255,150,60','140,220,255','220,130,255','255,220,90'];")
 rep("const SAVE_KEY='brigada-puente-v1';","const SAVE_KEY='legion-bosque-v1';")
-span("  {id:'rec',icon:","];","""  {id:'rec',icon:'bow',name:'Reclutas',desc:'+1 arquero al iniciar',base:30,mult:1.55,max:15},
-  {id:'pow',icon:'target',name:'Puntería',desc:'+15% de daño',base:40,mult:1.5,max:20},
-  {id:'rate',icon:'bolt',name:'Cadencia',desc:'+10% de flechas',base:40,mult:1.5,max:15},
-  {id:'slash',icon:'star',name:'Magia',desc:'La magia carga 25% más rápido',base:50,mult:1.6,max:8}
+span("  {id:'rec',icon:","];","""  {id:'rec',icon:'bow',name:'Reclutas',desc:'+1 arquero al iniciar',base:45,mult:1.55,max:15},
+  {id:'pow',icon:'target',name:'Puntería',desc:'+15% de daño',base:60,mult:1.5,max:20},
+  {id:'rate',icon:'bolt',name:'Cadencia',desc:'+10% de flechas',base:60,mult:1.5,max:15},
+  {id:'slash',icon:'star',name:'Magia',desc:'La magia carga 15% más rápido',base:150,mult:1.28,max:20}
 """)
 span("let W=1,H=1,DPR=1","const PJ={x:0,y:0,s:0};","""let W=1,H=1,DPR=1,F=500,CX=0,CY=0,HORY=0,dSq=1,shX=0,shY=0,shake=0,quality=1,T=0,PIX=2;
 function resize(){
@@ -43,13 +43,13 @@ span("const FOG_Z=38;","/* =====================================================
 rep("G.squad.tx+=dx*pxToWorld();","G.squad.tx+=dx/PIX*pxToWorld();")
 rep("pal:br?(Math.random()*BVAR.length)|0:(Math.random()*ZVAR.length)|0","pal:br?(Math.random()*BVAR.length)|0:run?3+((Math.random()*2)|0):(Math.random()*ZVAR.length)|0")
 rep("const b={x:s.wx+.12,z:s.wz+.4,d:dmg,life:RANGE/BV,vx:0,g:0};","const b={x:s.wx+.12,z:s.wz+.4,d:dmg,life:RANGE/BV,vx:0,g:0,mg:s.v===5};")
-rep("'¡GUARDIÁN LIBERADO!'","'¡ENT LIBERADO!'")
-rep("'GUARDIÁN PERDIDO'","'ENT PERDIDO'")
+rep("'¡GUARDIÁN LIBERADO!'","'¡TREANT LIBERADO!'")
+rep("'GUARDIÁN PERDIDO'","'TREANT PERDIDO'")
 rep("' TROPA'","' ALIADOS'")
 rep("'ARMA NV '","'FLECHAS NV '",2)
 rep("'¡PUENTE DESPEJADO!'","'¡CAMINO DESPEJADO!'")
 rep("mejora tu escuadrón y vuelve","mejora tu legión y vuelve")
-rep("[['Zombis eliminados',G.kills],['Soldados en pie',surv],['Guardián',gf?'Liberado':'Perdido']","[['Enemigos derrotados',G.kills],['Arqueros en pie',surv],['Ent',gf?'Liberado':'Perdido']")
+rep("[['Zombis eliminados',G.kills],['Soldados en pie',surv],['Guardián',gf?'Liberado':'Perdido']","[['Enemigos derrotados',G.kills],['Arqueros en pie',surv],['Guardián',gf?'Liberado':'Perdido']")
 span("function build3D(done){","boot();","""function boot(){
   loadSave();resize();buildProps();buildSigns();buildSprites();buildFlash();READY=true;const ls=$('loadScr');if(ls)ls.classList.add('hidden');toMenu();
 }
@@ -108,13 +108,17 @@ rep("  if(SCN){buildSky();buildBack();}\n}","  if(SCN){buildSky();buildBack();}\
 
 rep("for(const e of DL){if(!fogDone&&e.sz<fz){drawFog();fogDone=true;}","for(const e of DL){if(!fogDone&&(e.sz<fz||(e.kd===11&&e.sz-cam.z<80))){drawFog();fogDone=true;}")
 rep("  if(G&&!G.demo)drawGroundFx();\n  drawEntities();","  if(G&&!G.demo)drawGroundFx();\n  drawEnvGround();\n  drawEntities();")
-s=s.replace("function boot(){",P('v3a.js')+"\n"+P('v3b.js')+"\n"+P('v3c.js')+"\n"+P('v3d.js')+"\n"+P('v3e.js')+"\n"+P('v3f.js')+"\nfunction boot(){",1)
+s=s.replace("function boot(){",P('v3a.js')+"\n"+P('v3b.js')+"\n"+P('v3c.js')+"\n"+P('v3d.js')+"\n"+P('v3e.js')+"\n"+P('v3f.js')+"\n"+P('v4a.js')+"\n"+P('v4c.js')+"\n"+P('v4b.js')+"\nfunction boot(){",1)
 s=s.replace("setState:s=>{state=s;}};","setState:s=>{state=s;},pickCard:i=>pickCard(i),revive:y=>doRevive(y),dailyInfo:()=>dailyInfo()};",1)
 s=s.replace("READY=true;const ls=$('loadScr');if(ls)ls.classList.add('hidden');toMenu();","READY=true;const ls=$('loadScr');if(ls)ls.classList.add('hidden');toTitle();",1)
 s=s.replace("$('bHowBack').addEventListener('click',()=>{sfx.click();show('menu');});","$('bHowBack').addEventListener('click',()=>{sfx.click();show(HOW_BACK);});",1)
 s=s.replace("$('bSound').addEventListener('click',()=>{save.muted=!save.muted;persist();initAudio();if(save.muted)musStop();if(!save.muted)sfx.click();renderShop();});","$('bSound').addEventListener('click',()=>{save.muted=!save.muted;persist();initAudio();if(save.muted)musStop();else{sfx.click();musStart();}renderOpts();});",1)
 s=s.replace("$('bCrt').addEventListener('click',()=>{save.crt=!save.crt;persist();initAudio();sfx.click();renderShop();});","$('bCrt').addEventListener('click',()=>{save.crt=!save.crt;persist();initAudio();sfx.click();renderOpts();});",1)
 assert s.count("loadSave();resize();")==1
-s=s.replace("loadSave();resize();","loadSave();loadSaveExtra();resize();",1)
+s=s.replace("loadSave();resize();","loadSave();loadSaveExtra();loadSaveV4();resize();",1)
+assert s.count("const hv=!moved&&G.time<7;")==1
+s=s.replace("const hv=!moved&&G.time<7;","const hv=!G.tut&&!moved&&G.time<7;",1)
+assert s.count("setTxt(hud.lv,'lv','NIVEL '+G.lv);")==1
+s=s.replace("setTxt(hud.lv,'lv','NIVEL '+G.lv);","setTxt(hud.lv,'lv',G.lv===0?'ETAPA 0 · TUTORIAL':'NIVEL '+G.lv);",1)
 open(os.path.join(HERE,'game.js'),'w',encoding='utf-8').write(s)
 print('ok',len(s))

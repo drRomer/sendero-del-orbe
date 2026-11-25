@@ -48,7 +48,7 @@ function drawWorldUI(){
   const b=G.boss,sq=G.squad,gd=G.guard;
   if(gd&&(gd.st==='sleep'||gd.st==='lock')&&gd.z-cam.z<105&&proj(gd.x+1.2,(12.9+1.4)*GUARD_K+1.25,gd.z)){
     const x=clamp(Math.round(PJ.x),22,W-22),y=clamp(Math.round(PJ.y),Math.max(Math.round(HORY),34)+10,Math.round(H*.45));
-    ptext('ENT',x,y-12,1,'#c8ff8a','#0e2a14');ptext(String(Math.max(0,Math.ceil(gd.hp))),x,y,2,'#ffffff','#0e2a14');
+    ptext('TREANT',x,y-12,1,'#c8ff8a','#0e2a14');ptext(String(Math.max(0,Math.ceil(gd.hp))),x,y,2,'#ffffff','#0e2a14');
     if(gd.st==='lock'){const k=clamp((gd.z-GUARD_PASS-sq.z)/(GUARD_LOCK-GUARD_PASS),0,1),bw=36,bx=Math.round(x-bw/2),by=y+10;
       ctx.fillStyle='#120c18';ctx.fillRect(bx-1,by-1,bw+2,5);ctx.fillStyle='#7fd04e';ctx.fillRect(bx,by,Math.round(bw*k),3);
       if(Math.sin(T*6)>-.3){const msg='¡DISPARA DESDE LA IZQUIERDA!',mw=msg.length*6;ptext(msg,clamp(x,mw/2+2,W-mw/2-2),by+11,1,'#ffffff','#0e2a14');}}}
@@ -61,7 +61,7 @@ function drawWorldUI(){
   for(const t of G.texts){if(!proj(t.x,t.y,t.z))continue;ctx.globalAlpha=Math.max(0,1-t.t/t.l);ptext(t.txt,PJ.x,PJ.y,t.sz>1.3?2:1,t.col);}
   ctx.globalAlpha=1;
   if(G.banner>0&&!G.demo){const a=Math.min(1,G.banner/.5,(2.6-G.banner)/.3);if(a>.3){
-    ptext('NIVEL '+G.lv,W/2,H*.34,3,'#ffffff','#120c18');ptext(SCN.pal.name,W/2,H*.34+20,1,'#ffe27a','#120c18');}}
+    ptext(G.lv===0?'ETAPA 0':'NIVEL '+G.lv,W/2,H*.34,3,'#ffffff','#120c18');ptext(G.lv===0?'TUTORIAL':SCN.pal.name,W/2,H*.34+20,1,'#ffe27a','#120c18');}}
   if(G.banner2){const bn=G.banner2,a=Math.min(1,bn.t/.4,(2.4-bn.t)/.25);if(a>.3){
     const s=bn.txt.length*12<W-8?2:1;ptext(bn.txt,W/2,H*.3,s,bn.col,'#120c18');if(bn.sub)ptext(bn.sub,W/2,H*.3+16,1,'#ffffff','#120c18');}}
 }

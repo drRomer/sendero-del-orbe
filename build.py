@@ -3,7 +3,7 @@ Uso: python3 build.py [--publish]   → index.html (versión artifact de claude.
 La versión web (PWA) se genera con build_web.py, que reutiliza compose()."""
 import sys,re,os,base64
 HERE=os.path.dirname(os.path.abspath(__file__))
-PX2=['pxr9_part.js','chars9.js','dragon10.js','bosses10.js','units10.js','guard10.js']
+PX2=['pxr9_part.js','chars9.js','dragon10.js','bosses10.js','units10.js','guard10.js','guard11.js']
 def rd(*p):return open(os.path.join(HERE,*p),encoding='utf-8').read()
 def compose(pub):
     head=rd('shell.html')

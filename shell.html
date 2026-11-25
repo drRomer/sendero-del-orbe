@@ -42,6 +42,38 @@ button{font-family:inherit;cursor:pointer}
 #bSlash span{display:grid;place-items:center;width:100%;height:100%;background:#2a1e3e;font:9px var(--px);color:#a890d0}
 #bSlash.ready span{background:#7a46d8;color:#fff;text-shadow:2px 2px 0 var(--ink)}
 #bSlash.ready{animation:pulse .5s steps(2) infinite}
+#bSlash .key{display:block;font-size:6px;margin-top:5px;opacity:.75;font-style:normal}
+#hint i{font-style:normal}
+#tutBox{position:absolute;left:0;right:0;top:calc(var(--sat,0px) + 64px);text-align:center;font:22px/1.15 var(--vt);padding:0 18px;opacity:0;transition:opacity .35s;pointer-events:none}
+#tutBox span{display:inline-block;max-width:560px;background:rgba(18,12,24,.86);border:2px solid #ffe27a;padding:8px 12px;text-shadow:2px 2px 0 var(--ink)}
+#tutBox b{color:#ffe27a;font-weight:normal}
+#tutBox.on{opacity:1}
+#hud>*{zoom:var(--ui,1)}
+.gem{display:inline-block;width:9px;height:9px;flex:none;background:#5ae0ff;transform:rotate(45deg);box-shadow:inset -2px -2px 0 #1f8fb8,0 0 0 2px var(--ink);margin:0 3px 0 8px}
+.colRow,.tabs{display:flex;gap:8px;width:min(420px,100%);justify-content:center;flex-wrap:wrap}
+.colRow .sec,.tabs .sec{flex:1;font-size:18px;padding:7px 6px}
+.tabs .tab.on{background:var(--gold);color:var(--ink)}
+.colPanel{max-height:62vh;overflow-y:auto}
+.upg.lock .ic img{filter:brightness(.35) grayscale(.6)}
+.upg.lock .tx b{color:#9a8fb0}
+.upg.rot{background:rgba(255,226,122,.08)}
+.buy.on{background:#7ad07a;box-shadow:inset -3px -3px 0 #3e8a3e,3px 3px 0 rgba(0,0,0,.5)}
+.buy .gem{margin:0 2px 0 0}
+.lbPanel{max-height:66vh;overflow-y:auto}
+.lbMe{padding:6px;background:rgba(255,226,122,.08);border:2px solid rgba(255,226,122,.3);margin-bottom:8px}
+.lbInit{display:flex;align-items:center;gap:8px;flex-wrap:wrap}
+.lbInit label{font:9px var(--px);color:var(--gold)}
+#lbName{width:96px;font:20px var(--px);letter-spacing:.2em;text-transform:uppercase;text-align:center;background:#120c18;color:#fff;border:3px solid var(--paper);padding:6px 4px}
+.lbMine{font:18px/1.2 var(--vt);color:#d8c8f0;margin-top:6px}
+.lbRow{display:grid;grid-template-columns:34px 58px minmax(0,1fr) 70px;gap:6px;align-items:center;padding:5px 6px;font:18px var(--vt);border-bottom:1px solid rgba(246,243,234,.1)}
+.lbRow b{font:11px var(--px);letter-spacing:.12em;color:#fff}
+.lbRow .ti{color:#b8a8d0;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.lbRow .v{text-align:right;color:var(--gold);white-space:nowrap}
+.lbRow.me{background:rgba(122,208,122,.18)}
+.lbH{font:8px var(--px);color:var(--gold);border-bottom:2px solid rgba(246,243,234,.25)}
+.lbNote{font:16px/1.2 var(--vt);color:#a898c0;margin-top:8px;text-align:center}
+body:not(.kb) .t-kb,body.kb .t-touch{display:none!important}
+#bSlash span{align-content:center}
 @keyframes pulse{50%{box-shadow:0 0 0 3px #fff,0 0 0 6px #7a46d8,5px 5px 0 6px rgba(0,0,0,.5)}}
 #weap{position:absolute;left:calc(var(--sal) + 14px);bottom:calc(var(--sab) + 32px);font:8px var(--px);letter-spacing:.06em;background:var(--panel);border:3px solid var(--paper);box-shadow:0 0 0 2px var(--ink);padding:8px 10px;display:flex;align-items:center;gap:8px}
 #weap i{width:10px;height:10px;background:#d8c8a0;box-shadow:0 0 0 2px var(--ink)}
@@ -65,7 +97,7 @@ button{font-family:inherit;cursor:pointer}
 .mainBtns .big{min-width:240px}
 .big.alt{background:#8fb8ff;box-shadow:inset -4px -4px 0 #3f6fd8,inset 4px 4px 0 #d8e8ff,5px 5px 0 rgba(0,0,0,.55)}
 .big.red{background:#ff8a8a;box-shadow:inset -4px -4px 0 var(--red),inset 4px 4px 0 #ffd0d0,5px 5px 0 rgba(0,0,0,.55)}
-.topRow{display:flex;align-items:center;gap:12px;width:min(420px,100%)}
+.topRow{display:flex;align-items:center;gap:18px;width:min(420px,100%);margin:4px 0 16px}
 .topRow .back{font-size:18px;padding:8px 10px}
 .shopTitle{font:10px var(--px);letter-spacing:.06em;color:var(--gold);text-shadow:2px 2px 0 var(--ink)}
 .opts{display:flex;flex-direction:column;gap:10px}
@@ -111,8 +143,12 @@ button{font-family:inherit;cursor:pointer}
 h1.et{font:clamp(16px,5.6vw,22px)/1.4 var(--px);text-align:center;color:var(--gold);text-shadow:3px 3px 0 var(--ink)}
 .esub{font:22px var(--vt);color:#e8dcc8;text-shadow:2px 2px 0 var(--ink)}
 .stats{width:min(340px,100%)}
-.stats div{display:flex;justify-content:space-between;padding:8px 12px;background:var(--panel);border:2px solid rgba(246,243,234,.25);margin-top:6px;font:21px var(--vt)}
-.stats div b{font:11px var(--px);color:var(--gold);align-self:center}
+.stats div{display:flex;justify-content:space-between;align-items:center;gap:14px;padding:8px 12px;background:var(--panel);border:2px solid rgba(246,243,234,.25);margin-top:6px;font:21px/1.1 var(--vt)}
+.stats div>span{flex:0 0 auto;white-space:nowrap}
+.stats div b{flex:1 1 auto;min-width:0;font:11px/1.75 var(--px);color:var(--gold);text-align:right}
+.stats div b .ln{display:block}
+#endScr{justify-content:flex-start}#endScr>:first-child{margin-top:auto}#endScr>:last-child{margin-bottom:auto}
+@media (max-height:720px){#endScr{gap:9px}#endScr .stats div{padding:5px 10px;margin-top:4px;font-size:19px}#endScr .stats div b{font-size:10px;line-height:1.65}#endScr .esub{font-size:20px}}
 .how{text-align:left;font:20px/1.08 var(--vt);color:#e8dcc8}
 .how li{margin:7px 0 7px 18px}
 .how b{color:#fff}
@@ -140,9 +176,10 @@ h1.et{font:clamp(16px,5.6vw,22px)/1.4 var(--px);text-align:center;color:var(--go
     <div class="coins"><span class="coin"></span><span id="coinText">0</span></div>
   </div>
   <div id="bossBar" class="hidden"><div class="bn">JEFE</div><div class="bb"><i id="bossFill"></i></div></div>
-  <div id="hint"><span>◀ Desliza para mover ▶<br>Dispara a los portales para subir su número</span></div>
+  <div id="hint"><span><i class="t-touch">◀ Desliza para mover ▶</i><i class="t-kb">◀ ▶ o A / D para mover · ESPACIO: magia</i><br>Dispara a los portales para subir su número</span></div>
+  <div id="tutBox" aria-live="polite"><span></span></div>
   <div id="weap"><i></i><span id="weapText">FLECHAS NV 1</span></div>
-  <button id="bSlash" type="button" aria-label="Onda mágica"><span>MAGIA</span></button>
+  <button id="bSlash" type="button" aria-label="Onda mágica"><span>MAGIA<i class="t-kb key">ESPACIO</i></span></button>
 </div>
 
 <div id="titleScr" class="screen hidden" role="button" tabindex="0" aria-label="Pulsa para empezar">
@@ -156,6 +193,7 @@ h1.et{font:clamp(16px,5.6vw,22px)/1.4 var(--px);text-align:center;color:var(--go
   <img id="mainLogo" class="logoimg" alt="Sendero del Orbe" width="572" height="656">
   <div class="mainBtns">
     <button id="bMainPlay" class="big" type="button">JUGAR</button>
+    <button id="bMainLb" class="big alt" type="button">TABLA</button>
     <button id="bMainOpt" class="big alt" type="button">OPCIONES</button>
     <button id="bMainExit" class="big red" type="button">SALIR</button>
     <button id="bInstall" class="sec hidden" type="button">INSTALAR APP</button>
@@ -167,8 +205,9 @@ h1.et{font:clamp(16px,5.6vw,22px)/1.4 var(--px);text-align:center;color:var(--go
   <button id="bPlay" class="big" type="button">JUGAR · NIVEL <span id="mLv">1</span></button>
   <div class="mboss"><span id="mBoss"></span><b id="mStars"></b></div>
   <button id="bDaily" class="sec daily" type="button">DESAFÍO DIARIO</button>
+  <div class="colRow"><button id="bGuards" class="sec" type="button">Guardianes</button><button id="bSkins" class="sec" type="button">Aspectos</button><button id="bAch" class="sec" type="button">Logros</button><button id="bLb" class="sec" type="button">Tabla</button></div>
   <div class="panel pxbox">
-    <div class="shopHead">MEJORAS <span><i class="coin"></i><b id="shopCoins">0</b></span></div>
+    <div class="shopHead">MEJORAS <span><i class="coin"></i><b id="shopCoins">0</b><i class="gem"></i><b id="shopGems">0</b></span></div>
     <div id="shopList"></div>
   </div>
 </div>
@@ -193,6 +232,24 @@ h1.et{font:clamp(16px,5.6vw,22px)/1.4 var(--px);text-align:center;color:var(--go
   <button id="bOptBack" class="big" type="button">VOLVER</button>
 </div>
 
+<div id="colScr" class="screen hidden">
+  <div class="topRow"><button id="bColBack" class="sec back" type="button">◀ VOLVER</button><div class="shopTitle">COLECCIÓN</div></div>
+  <div class="tabs"><button data-t="g" class="sec tab" type="button">Guardianes</button><button data-t="s" class="sec tab" type="button">Aspectos</button><button data-t="a" class="sec tab" type="button">Logros</button></div>
+  <div class="panel pxbox colPanel"><div id="colHead" class="shopHead"></div><div id="colList"></div></div>
+</div>
+
+<div id="lbScr" class="screen hidden">
+  <div class="topRow"><button id="bLbBack" class="sec back" type="button">◀ VOLVER</button><div class="shopTitle">TABLA DE LEYENDAS</div></div>
+  <div class="tabs"><button data-o="s" class="sec tab" type="button">General</button><button data-o="km" class="sec tab" type="button">Distancia</button><button data-o="d" class="sec tab" type="button">Muertes</button></div>
+  <div class="panel pxbox lbPanel">
+    <div class="lbMe"><div class="lbInit"><label for="lbName">TUS INICIALES</label><input id="lbName" maxlength="3" autocomplete="off" autocapitalize="characters" spellcheck="false" inputmode="text" placeholder="AAA"><button id="bLbPost" class="buy" type="button">PUBLICAR</button></div>
+      <div id="lbMine" class="lbMine"></div></div>
+    <div id="lbHead" class="lbRow lbH"></div>
+    <div id="lbList"></div>
+    <div id="lbNote" class="lbNote"></div>
+  </div>
+</div>
+
 <div id="toast" class="toast hidden" role="status" aria-live="polite"></div>
 
 <div id="confirmScr" class="screen hidden">
@@ -213,19 +270,19 @@ h1.et{font:clamp(16px,5.6vw,22px)/1.4 var(--px);text-align:center;color:var(--go
   <div class="panel pxbox how">
     <div class="shopHead">CÓMO JUGAR</div>
     <ul>
-      <li><b>Desliza</b> el dedo para mover a tu legión. Disparan solos.</li>
+      <li><span class="t-touch"><b>Desliza</b> el dedo</span><span class="t-kb">Usa <b>◀ ▶</b> o <b>A / D</b> (o arrastra con el mouse)</span> para mover a tu legión. Disparan solos.</li>
       <li>Portales <b style="color:#7ab0ff">azules</b> suman o multiplican; los <b style="color:#ff7a84">rojos</b> restan. <b>Dispárales</b> para subir su número.</li>
       <li>Cofres <b>FLECHAS</b> mejoran tus flechas (veneno, fuego, hielo…); cofres <b>ALIADOS</b> suman arqueros. Si no los rompes, aplastan a quien choque con ellos.</li>
       <li>Los <b>magos</b> hacen daño en área. Los portales con <b style="color:#c8a0ff">sombrero</b> suman magos.</li>
       <li>Cada tierra tiene sus enemigos: orcos, esqueletos, espíritus y diablillos rápidos, <b>gólems</b> resistentes y <b>goblins arqueros</b> que te disparan: elimínalos rápido.</li>
-      <li>En la orilla izquierda espera un <b>guardián</b> encerrado (Ent, lobos o hipogrifo): dispárale desde la izquierda para liberarlo y pelea a tu lado.</li>
+      <li>En la orilla izquierda espera un <b>guardián</b> encerrado (Treant, lobos o hipogrifo): dispárale desde la izquierda para liberarlo y pelea a tu lado.</li>
       <li>Cada 10 niveles cambia el jefe y la tierra; cada 2 niveles el jefe se arma más y aprende ataques nuevos. Sal de las zonas rojas antes del golpe.</li>
       <li>Lo que pase de 120 tropas va a la <b>reserva</b> y repone bajas. Caballeros aguantan golpes, druidas reponen tropas, catapultas golpean en área.</li>
       <li>Cofres dorados, la tropa de élite y el guardián te dan <b>bendiciones</b>: elige 1 de 3.</li>
-      <li>Llena el anillo y toca <b>MAGIA</b>: barre la horda, sube los portales y daña al jefe.</li>
+      <li>Llena el anillo y <span class="t-touch">toca</span><span class="t-kb">pulsa <b>ESPACIO</b> o haz clic en</span> <b>MAGIA</b>: barre la horda, sube los portales y daña al jefe. <span class="t-kb"><b>Esc</b> o <b>P</b> pausa.</span></li>
     </ul>
   </div>
-  <button id="bHowBack" class="big" type="button">ENTENDIDO</button>
+  <div class="row"><button id="bTut" class="sec" type="button">Jugar tutorial</button><button id="bHowBack" class="big" type="button">ENTENDIDO</button></div>
 </div>
 
 <div id="pauseScr" class="screen hidden">

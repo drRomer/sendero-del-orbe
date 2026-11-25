@@ -8,8 +8,8 @@ const BOSSN3=['TROLL DEL BOSQUE','EL NIGROMANTE','DRAGÓN DEL OCASO','DEMONIO DE
 const BOSSC3=[['170,120,60','240,210,150'],['90,230,120','200,255,200'],['255,110,40','255,210,110'],['255,60,30','255,200,100'],['255,200,80','255,250,220'],['184,106,255','230,200,255'],['255,150,60','255,240,200']];
 const ROMAN=['I','II','III','IV','V'];
 const UNITN={5:'MAGOS',6:'CABALLEROS',7:'DRUIDAS',8:'CATAPULTA'},UNITS={6:'CAB',7:'DRU',8:'CAT'};
-function blockOf(lv){if(lv>MAXLV)return (lv-MAXLV-1)%6;if(lv===MAXLV)return 6;return Math.floor((lv-1)/10);}
-function tierOf(lv){if(lv>=MAXLV)return 4;if(lv>50)return Math.min(4,Math.floor((lv-51)/2));return Math.floor(((lv-1)%10)/2);}
+function blockOf(lv){if(lv<1)return 0;if(lv>MAXLV)return (lv-MAXLV-1)%6;if(lv===MAXLV)return 6;return Math.floor((lv-1)/10);}
+function tierOf(lv){if(lv<1)return 0;if(lv>=MAXLV)return 4;if(lv>50)return Math.min(4,Math.floor((lv-51)/2));return Math.floor(((lv-1)%10)/2);}
 function hpScale(lv){const l=lv-1;return 1+.16*l+.0015*l*l;}
 function bossTitle(lv){const b=blockOf(lv),t=tierOf(lv);if(b===6)return BOSSN3[6];if(b===5)return BOSSN3[5]+' · FORMA '+(t+1);return BOSSN3[b]+' '+ROMAN[t];}
 
@@ -49,14 +49,14 @@ function loadSave(){
       save.level=n(s.level,1,999,1);save.coins=n(s.coins,0,1e9,0);save.best=n(s.best,1,999,1);save.muted=s.muted===true;save.crt=s.crt===true;
       if(s.up&&typeof s.up==='object')for(const u of UPG)save.up[u.id]=n(s.up[u.id],0,u.max,0);
       save.stars={};if(s.stars&&typeof s.stars==='object')for(const k in s.stars){const lv=parseInt(k,10);if(lv>=1&&lv<=999)save.stars[lv]=n(s.stars[k],0,3,0);}
-      save.daily=typeof s.daily==='string'&&/^\d{8}$/.test(s.daily)?s.daily:'';
+      save.daily=typeof s.daily==='string'&&/^\d{8}$/.test(s.daily)?s.daily:'';save.tut=s.tut===true;
       const f=(v,d)=>Number.isFinite(v)?clamp(v,0,1):d;save.vm=f(s.vm,.7);save.vs=f(s.vs,.8);save.vib=s.vib!==false;save.qual=['normal','alta','baja'].includes(s.qual)?s.qual:'normal';}
   }catch(e){}
   if(!save.stars)save.stars={};if(typeof save.daily!=='string')save.daily='';if(save.vm==null)save.vm=.7;if(save.vs==null)save.vs=.8;if(save.vib==null)save.vib=true;if(!save.qual)save.qual='normal';
 }
 const totalStars=()=>Object.values(save.stars||{}).reduce((a,b)=>a+b,0);
 function todayKey(){const d=new Date();return d.getFullYear()*10000+(d.getMonth()+1)*100+d.getDate();}
-const DAILY_M=[['horde','HORDA DOBLE'],['furia','JEFE FURIOSO'],['oro','ORO TRIPLE · ENEMIGOS DUROS'],['sinEnt','SIN ENT']];
+const DAILY_M=[['horde','HORDA DOBLE'],['furia','JEFE FURIOSO'],['oro','ORO TRIPLE · ENEMIGOS DUROS'],['sinEnt','SIN GUARDIÁN']];
 function dailyInfo(){const k=todayKey(),lv=Math.max(1,Math.min(save.best,MAXLV)-(k%3)),m=DAILY_M[k%4];return {key:String(k),lv,m:m[0],name:m[1],reward:120+lv*8,seed:k*7+lv};}
 
 // ---------- escena por bloque ----------
@@ -111,7 +111,7 @@ function genLevel(lv,opts){opts=opts||{};
     waves.push({z,n,x0,x1,depth:rf(5,9)+n*.08,br:o.mini?Math.min(br,1):o.gaunt?br+2:br,run,sh:o.gaunt?sh+2:sh,hp:zhp,bhp,done:false,ro:o.noRole?null:roleMix(),mini:!!o.mini,gaunt:!!o.gaunt,fs:o.fs||0});};
   const crate=(z,x,type)=>{const hp=Math.round((120+Math.min(lv,60)*12)*Math.pow(hs,.75));crates.push({z,x,type:type||(R()<.55?'w':'m'),hp:type==='g'?Math.round(hp*1.6):hp,max:type==='g'?Math.round(hp*1.6):hp,val:ri(4,8)+Math.min(lv,25),dead:false,fl:0,ft:0,kd:4,sz:z});};
   const event=(z,kind)=>{
-    if(kind==='roll'){rollTrig.push({z,n:2+Math.floor(lv/14),kind:env==='earth'&&bk!==3?'log':'rock',k:0,t:0,done:false});return 34;}
+    if(kind==='roll'){rollTrig.push({z,n:4+Math.floor(lv/8),kind:env==='earth'&&bk!==3?'log':'rock',k:0,t:0,done:false});return 44;}
     if(kind==='spikes'){const per=2.4-Math.min(.8,lv*.012);for(let i=0;i<3;i++){const s=R()<.5?-1:1,zz=z+i*9;spikes.push({z0:zz,z1:zz+4.5,x0:s<0?-ROAD:-ROAD+3.6+R()*1.2,x1:s<0?ROAD-3.6-R()*1.2:ROAD,per,off:R()*per,up:false});}return 34;}
     if(kind==='bridge'){bridge={z0:z,z1:z+26,cx:rf(-1.6,1.6),hw:2.1};return 34;}
     return 0;};
@@ -137,10 +137,17 @@ function genLevel(lv,opts){opts=opts||{};
   // caudillo (miniboss)
   wave(z,6+Math.round(lvC*1.2),0,{mini:true});z+=rf(34,40);
   // bifurcación
-  if(lv>=2){fork={z0:z,z1:z+64};const L0=-ROAD,L1=-1.1,R0=1.1,R1=ROAD;
-    spikes.push({z0:z+12,z1:z+16,x0:L0,x1:L1-.9,per:2.2,off:R()*2.2,up:false});spikes.push({z0:z+30,z1:z+34,x0:L0+.9,x1:L1,per:2.2,off:R()*2.2,up:false});
-    crate(z+22,-2.9,'g');crate(z+44,-2.9,'m');wave(z+50,6+lvC,0,{x0:L0,x1:L1,fs:-1,noRole:true});
-    wave(z+14,ri(14,18)+Math.round(lvC*3),0,{x0:R0,x1:R1,fs:1});wave(z+42,ri(14,18)+Math.round(lvC*3.4),0,{x0:R0,x1:R1,fs:1});
+  // bifurcación real: dos caminos de ancho completo; el contenido de cada uno queda pendiente y solo se activa el del camino elegido
+  if(lv>=2){fork={z0:z,z1:z+64,pend:{}};
+    const kinds=['tesoro','batalla','portales'],a=kinds.splice(ri(0,2),1)[0],b=kinds[ri(0,1)];fork.k={'-1':a,'1':b};
+    for(const sd of [-1,1]){const kind=fork.k[sd],n0=[gates.length,crates.length,waves.length,spikes.length],f=R()<.5?-1:1;
+      if(kind==='tesoro'){// trampas en parte del ancho: se pueden esquivar
+        spikes.push({z0:z+14,z1:z+18,x0:f<0?-ROAD:-ROAD*.2,x1:f<0?ROAD*.2:ROAD,per:2.2,off:R()*2.2,up:false});
+        spikes.push({z0:z+31,z1:z+35,x0:f<0?-ROAD*.2:-ROAD,x1:f<0?ROAD:ROAD*.2,per:2.2,off:R()*2.2,up:false});
+        crate(z+24,f*2.6,'g');crate(z+44,-f*2.6,'m');wave(z+52,6+lvC,0,{noRole:true});}
+      else if(kind==='batalla'){wave(z+16,ri(14,18)+Math.round(lvC*3),0,{});wave(z+42,ri(14,18)+Math.round(lvC*3.4),0,{});}
+      else{pair(z+18,{k:'mul',v:2},{k:'pct',v:-ri(30,40)});crate(z+31,f*2.6,'w');pair(z+44,big(),{k:'mul',v:.5});wave(z+56,4+Math.round(lvC*.6),0,{noRole:true});}
+      fork.pend[sd]={gates:gates.splice(n0[0]),crates:crates.splice(n0[1]),waves:waves.splice(n0[2]),spikes:spikes.splice(n0[3])};}
     z+=72;}
   // tramo C: emboscada, portal maldito, segundo obstáculo
   amb={z:z,done:false};z+=10;
@@ -167,7 +174,7 @@ function mkGuard(lv,gz){
 }
 const BARMOR=[[1,1,.75,.75,.75],[1,1,.8,.8,.8],[1,1,.6,.6,.6],[1,1,.75,.75,.75],[1,1,.75,.75,.75],[1,1,1,1,1],[1,1,1,1,1]];
 function newRun(lv,demo,opts){opts=opts||{};
-  const daily=opts.daily||null,d=genLevel(lv,daily?{seed:daily.seed}:{});
+  const daily=opts.daily||null,d=lv===0?genLevel0():genLevel(lv,daily?{seed:daily.seed}:{});
   SCN=mkScene(lv,d.L,d.gz);buildSky();buildBack();buildVignette();
   const bk=d.bk,t=d.t,B=bossSheets(bk,t);SPR.titan={walk:B.walk,raise:B.raise,kl:10.4/Math.max(10,B.walk.ay-B.walk.top)};
   {const bn=document.querySelector('#bossBar .bn');if(bn)bn.textContent=bossTitle(lv);}CF.length=0;COINXY=null;
@@ -176,14 +183,15 @@ function newRun(lv,demo,opts){opts=opts||{};
     soldiers:[],bullets:[],eb:[],hs:0,zombies:[],parts:[],texts:[],corpses:[],shock:[],flashes:[],rings:[],
     boss:{x:0,z:d.L+6,hp:d.bossHp,max:d.bossHp,t:0,st:'idle',atk:2.4,sum:6,raise:0,raiseT:0,flash:-1,walk:0,dieT:0,dieDir:1,roarT:2,kd:6,sz:0,
       block:bk,tier:t,spd:.3+.04*t+.02*Math.min(bk,4),ft:0,enr:false,ph2:false,ph3:false,immune:0,link:0,fly:0,intang:0,cr:2,last:'',armor:BARMOR[bk][t],fbT:1,lift:0},
-    guard:(daily&&daily.m==='sinEnt')?null:Object.assign(mkGuard(lv,d.gz),{kind:GKIND[(lv-1)%3]}),pack:null,grif:null,
+    guard:(daily&&daily.m==='sinEnt')?null:Object.assign(mkGuard(lv,d.gz),{kind:guardKind(lv)}),pack:null,grif:null,allies:null,forge:1,
     phase:'run',time:0,kills:0,coins:0,meter:.2,slash:null,wl:1,fireAcc:0,endT:0,shown:false,banner:demo?0:2.6,banner2:null,flashScr:0,
     reserve:0,refT:0,lost:0,bl:{pierce:0,bounce:0,rain:0,rate:0,dmg:0,magic:0,ent:0},taken:{},shieldHits:0,cards:0,
     hz:[],bp:[],cats:[],rolls:[],rollTrig:d.rollTrig,spikes:d.spikes,bridge:d.bridge,fork:d.fork,forkSide:0,amb:d.amb,cmp:1,
     goldMul:daily&&daily.m==='oro'?3:1,hpMul:daily&&daily.m==='oro'?1.3:1,bossMul:1,rainT:8,synT:12,drT:0,revived:false,daily,countdown:null,chainX:null,grav:0,nk:0,nm:0};
   SPR.guard3=(GUARD_ROT&&(SCN.env==='cosmo'||SCN.env==='void'))?(SPR.guardC||SPR.guard3):(SPR.guardE||SPR.guard3);
-  if(d.fork){const F=d.fork;for(let z=F.z0+2;z<F.z1;z+=2.6)SCN.props.push({x:rnd(-.35,.35),z,p:Math.random()<.6?PROPS.rock:(SCN.env==='earth'?PROPS.bush[0]:PROPS.rock),kd:10,sz:z});}
+  if(d.fork){const F=d.fork;SCN.props=SCN.props.filter(o=>o.z<F.z0-2||o.z>F.z1+4);SCN.lamps=(SCN.lamps||[]).filter(l=>l.z<F.z0-2||l.z>F.z1+4);}
   addSoldiers(demo?7:1+save.up.rec+Math.floor(Math.min(lv,60)/6),true);
+  if(lv===0&&!demo)tutInit(G);if(typeof tutHide==='function')tutHide();if(G.tut){G.tut.i=0;}
   cam.z=-CAM_D;cam.x=0;
 }
 
@@ -210,7 +218,7 @@ function updSoldiers(dt){
     s.wx=sq.x+s.ox;s.wz=sq.z+s.oz;s.sz=s.wz;}
 }
 const shoots=s=>(s.v<6||s.v===7)&&!(s.ch>0);
-function arrowDmg(){return BASE_DMG*(1+.15*save.up.pow)*(1+.3*(G.wl-1))*(1+.3*G.bl.dmg);}
+function arrowDmg(){return BASE_DMG*(1+.15*save.up.pow)*(1+.3*(G.wl-1))*(1+.3*G.bl.dmg)*(G.forge||1);}
 function fire(dt){
   const S=G.soldiers,n=S.length;if(!n)return;let sh=0;for(const s of S)if(shoots(s))sh++;if(!sh)return;
   const shooters=Math.min(sh,CAP),mult=Math.pow(sh/shooters,.7);
@@ -260,8 +268,9 @@ function bounceFrom(t,b){let best=null,bd=9;for(const z of G.zombies){if(z.dead|
 function killZombie(z,reward){
   if(z.dead)return;z.dead=true;
   if(z.link&&G.boss.link>0){G.boss.link--;if(G.boss.link<=0&&G.boss.immune>0){G.boss.immune=0;ftext('¡ESCUDO ROTO!','#bfffc8',G.boss.x,9,G.boss.z-2,1.4);sfx.shatter();}}
-  if(reward){G.kills++;const zone=G.fork&&G.forkSide>0&&z.z>=G.fork.z0-4&&z.z<=G.fork.z1+10?2:1;G.coins+=Math.round((z.mini?25:z.br?8:1)*G.goldMul*zone);
-    G.meter=Math.min(1,G.meter+(z.br?.05:.011)*(1+.25*save.up.slash)*(1+.6*G.bl.magic));}
+  if(reward){G.kills++;const zone=G.fork&&G.forkSide&&G.fork.k&&G.fork.k[G.forkSide]==='batalla'&&z.z>=G.fork.z0-4&&z.z<=G.fork.z1+10?2:1;G.coins+=Math.round((z.mini?25:z.br?8:1)*G.goldMul*zone);
+    G.meter=Math.min(1,G.meter+(z.br?.05:.011)*(1+.15*save.up.slash)*(1+.6*G.bl.magic));}
+  if(z.caud){caudDown(z,reward);}
   if(z.mini){G.eliteLeft=Math.max(0,(G.eliteLeft||1)-1);shake=.6;G.hs=.1;for(let i=0;i<6;i++)flyCoin(z.x+rnd(-1,1),2,z.z);
     if(G.eliteLeft===0){G.cards++;G.banner2={txt:'¡TROPA DE ÉLITE CAÍDA!',sub:'Elige una bendición',t:2.2,col:'#ffe27a'};shake=.9;G.hs=.15;}else ftext('ÉLITE · QUEDAN '+G.eliteLeft,'#ffe27a',z.x,3,z.z,1.1);}
   pixelBurst(z);if(reward&&(z.br||Math.random()<.5))flyCoin(z.x,1,z.z);
@@ -286,6 +295,7 @@ function spawnWave(w){
 function updZombies(dt){
   const Z=G.zombies,sq=G.squad,S=G.soldiers,F=G.fork,Br=G.bridge;
   for(const z of Z){if(z.dead)continue;
+    if(z.caud){caudTick(z,dt);z.sz=z.z;continue;}
     if(z.ov){z.z+=(RUN+5)*dt;z.x+=(z.side*4.4-z.x)*Math.min(1,dt*2);z.ph+=dt*9;if(z.z>sq.z+11)z.ov=false;z.sz=z.z;continue;}
     if(z.fly){z.z-=z.sp*dt;const tx=sq.x+z.off*.4;z.x+=clamp(tx-z.x,-1,1)*3.4*dt;z.ph+=dt*10;}
     else{z.z-=z.sp*dt;if(z.sh&&z.z-sq.z<15)z.z+=z.sp*dt;if((z.role==='heal'||z.role==='raise')&&z.z-sq.z<15)z.z+=z.sp*.8*dt;z.ph+=dt*(z.br?5.4:z.sp*2.6+1.2);}
@@ -295,7 +305,6 @@ function updZombies(dt){
     const dz=z.z-sq.z;
     if(dz<18&&!z.fly){const tx=sq.x+z.off;z.x+=clamp(tx-z.x,-1,1)*z.sp*.5*dt;}
     if(z.fly)z.x=clamp(z.x,-ROAD-3,ROAD+3);else z.x=clamp(z.x,-ROAD,ROAD);
-    if(F&&z.z>=F.z0-1&&z.z<=F.z1&&!z.fly){const s=z.fs||(z.x<0?-1:1);z.fs=s;if(s<0)z.x=Math.min(z.x,-1.2);else z.x=Math.max(z.x,1.2);}
     if(Br&&z.z>Br.z0&&z.z<Br.z1&&!z.fly)z.x=clamp(z.x,Br.cx-Br.hw+.3,Br.cx+Br.hw-.3);
     if(z.hit>0)z.hit-=dt;
     if(dz<1.8&&dz>-1.8&&S.length){const r=z.mini?1.25:z.br?.85:.5;
@@ -333,7 +342,7 @@ function applyGate(gt){
 function breakCrate(c,reward){
   c.dead=true;c.ft=0;debris(c.x,.8,c.z,14,c.type==='g'?'220,180,60':'110,86,52');
   if(reward){G.coins+=5*G.goldMul;
-    if(c.type==='g'){G.cards++;ftext('¡BENDICIÓN!','#ffe27a',c.x,2.4,c.z,1.3);}
+    if(c.type==='g'){G.cards++;ftext('¡BENDICIÓN!','#ffe27a',c.x,2.4,c.z,1.3);v4Crate(c);}
     else if(c.type==='w'){if(G.wl<6)G.wl++;ftext('FLECHAS NV '+G.wl,'#ffe27a',c.x,2.2,c.z,1.1);}
     else{addSoldiers(c.val);ftext('+'+c.val+' ALIADOS','#8fd0ff',c.x,2.2,c.z,1.1);}
     sfx.crate();buzz(20);burst(c.x,1,c.z,12,'255,230,140');for(let i=0;i<4;i++)flyCoin(c.x+rnd(-.5,.5),1,c.z);}
@@ -362,14 +371,17 @@ function guardImpact(w){
 }
 // ---------- eventos del camino ----------
 function breakRoll(r){if(r.dead)return;r.dead=true;debris(r.x,.8,r.z,18,r.kind==='log'?'120,80,46':'120,112,100');dust(r.x,r.z,4,1.4);G.coins+=4*G.goldMul;flyCoin(r.x,1,r.z);sfx.impact();}
-function spawnAmbush(){const sq=G.squad,E=SCN.pal.en,hp=Math.round(34*Math.pow(hpScale(G.lv),.8))*G.hpMul,k=5+Math.min(10,Math.floor(G.lv/5));
-  G.banner2={txt:'¡EMBOSCADA!',sub:'Salen del bosque por los lados y por detrás',t:2.2,col:'#ff9a8a'};sfx.roar();shake=.4;
+function spawnAmbush(){const sq=G.squad,E=SCN.pal.en,hp=Math.round(34*Math.pow(hpScale(G.lv),.8))*G.hpMul,k=9+Math.min(14,Math.floor(G.lv/3));
+  G.banner2={txt:'¡EMBOSCADA!',sub:'Derriba al CAUDILLO o seguirá llamando refuerzos',t:2.2,col:'#ff9a8a'};sfx.roar();shake=.4;
   for(const s of [-1,1])for(let i=0;i<k;i++)G.zombies.push({x:s*ROAD,z:sq.z+rnd(5,15),sp:rnd(1.4,2.2),hp,max:hp,br:false,run:false,sh:false,cd:1,cd2:2,shoot:0,ph:Math.random()*TAU,off:rnd(-1,1),pal:E.n[(Math.random()*E.n.length)|0],hit:0,dead:false,kd:2,sz:0});
-  for(let i=0;i<k;i++){const s=i%2?-1:1;G.zombies.push({x:s*4.4,z:sq.z-6-rnd(0,3),sp:rnd(1.2,1.8),hp,max:hp,br:false,run:false,sh:false,cd:1,cd2:2,shoot:0,ph:0,off:rnd(-1,1),pal:E.r[(Math.random()*E.r.length)|0],hit:0,dead:false,kd:2,sz:0,ov:true,side:s});}
+  {const bh=Math.round(330*Math.pow(hpScale(G.lv),.85))*G.hpMul,nb=G.lv>=3?1+Math.floor(G.lv/12):0;for(let i=0;i<nb;i++)G.zombies.push({x:rnd(-2.5,2.5),z:sq.z+rnd(16,22),sp:.9,hp:bh,max:bh,br:true,run:false,sh:false,cd:1,cd2:2,shoot:0,ph:0,off:rnd(-1,1),pal:E.h[(Math.random()*E.h.length)|0],hit:0,dead:false,kd:2,sz:0});}
+  G.amb.t2=2.4;G.amb.k2=Math.round(k*1.4);
+  for(let i=0;i<Math.round(k*.8);i++){const s=i%2?-1:1;G.zombies.push({x:s*4.4,z:sq.z-6-rnd(0,3),sp:rnd(1.2,1.8),hp,max:hp,br:false,run:false,sh:false,cd:1,cd2:2,shoot:0,ph:0,off:rnd(-1,1),pal:E.r[(Math.random()*E.r.length)|0],hit:0,dead:false,kd:2,sz:0,ov:true,side:s});}
+  spawnCaudillo();
   G.zombies.sort((a,b)=>a.z-b.z);}
 function updEvents(dt){const sq=G.squad,S=G.soldiers;
   for(const gt of G.gates){if(gt.mv&&!gt.used){const b=Math.sin(G.time*1.3+gt.mvp)*2.2;if(gt.side<0)gt.x1=b;else gt.x0=b;}}
-  for(const tr of G.rollTrig){if(tr.done||sq.z<tr.z-18)continue;tr.t-=dt;if(tr.t<=0){tr.t=1.15;tr.k++;const x=clamp(sq.x+rnd(-1.2,1.2),-3,3),hp=Math.round(260*hpScale(G.lv));
+  for(const tr of G.rollTrig){if(tr.done||sq.z<tr.z-18)continue;tr.t-=dt;if(tr.t<=0){tr.t=tr.k%3===2?1.4:1.0;tr.k++;const x=clamp(sq.x+rnd(-1.4,1.4),-3,3),hp=Math.round(520*hpScale(G.lv));
     G.rolls.push({x,z:sq.z+42,w:tr.kind==='log'?2.0:1.15,sp:tr.kind==='log'?10:12.5,kind:tr.kind,hp,max:hp,f:0,fl:0,dead:false,kd:12,sz:sq.z+42});if(tr.k>=tr.n)tr.done=true;}}
   for(const r of G.rolls){if(r.dead)continue;r.z-=r.sp*dt;r.f+=dt*r.sp*.9;r.sz=r.z;if(r.fl>0)r.fl-=dt;
     if(Math.abs(r.z-sq.z)<4)for(let j=S.length-1;j>=0;j--){const s=S[j];if(Math.abs(s.wx-r.x)<r.w&&Math.abs(s.wz-r.z)<.7)killSoldierAt(j);}
@@ -379,6 +391,10 @@ function updEvents(dt){const sq=G.squad,S=G.soldiers;
     if(up&&sq.z>sp.z0-4&&sq.z<sp.z1+4)for(let j=S.length-1;j>=0;j--){const s=S[j];if(s.wz>sp.z0&&s.wz<sp.z1&&s.wx>sp.x0&&s.wx<sp.x1)killSoldierAt(j);}}
   const Br=G.bridge;if(Br&&sq.z>Br.z0-4&&sq.z<Br.z1+4)for(let j=S.length-1;j>=0;j--){const s=S[j];if(s.wz>Br.z0&&s.wz<Br.z1&&Math.abs(s.wx-Br.cx)>Br.hw){for(let k=0;k<4;k++)part({x:s.wx,y:.1,z:s.wz,vx:rnd(-1,1),vy:rnd(1,3),vz:rnd(-.5,.5),l:.4,m:.4,sz:rnd(.06,.12),c:SCN.env==='trib'?'255,140,40':SCN.env==='earth'?'120,190,255':'184,106,255',t:0});s.inv=0;s.hp=1;killSoldierAt(j);}}
   if(G.amb&&!G.amb.done&&sq.z>=G.amb.z){G.amb.done=true;spawnAmbush();}
+  // segunda oleada de la emboscada: llegan desde el frente en abanico
+  if(G.amb&&G.amb.done&&G.amb.t2>0){G.amb.t2-=dt;if(G.amb.t2<=0&&G.phase==='run'){const E=SCN.pal.en,hp=Math.round(34*Math.pow(hpScale(G.lv),.8))*G.hpMul;
+    for(let i=0;i<G.amb.k2;i++)G.zombies.push({x:rnd(-ROAD,ROAD),z:sq.z+rnd(14,26),sp:rnd(1.5,2.3),hp,max:hp,br:false,run:G.lv>=3&&Math.random()<.3,sh:false,cd:1,cd2:2,shoot:0,ph:Math.random()*TAU,off:rnd(-1,1),pal:E.n[(Math.random()*E.n.length)|0],hit:0,dead:false,kd:2,sz:0});
+    G.zombies.sort((a,b)=>a.z-b.z);G.banner2={txt:'¡MÁS ENEMIGOS!',sub:'La emboscada se cierra',t:1.6,col:'#ff9a8a'};if(thr('caud',.5))sfx.roar();}}
 }
 // ---------- unidades especiales y sinergias ----------
 function densest(z0,z1){const sq=G.squad,Z=G.zombies;let best=null,bc=0;for(const z of Z){if(z.dead||z.ov||z.z<sq.z+z0||z.z>sq.z+z1)continue;let c=0;for(const o of Z)if(!o.dead&&Math.abs(o.x-z.x)<3&&Math.abs(o.z-z.z)<3)c+=o.br?4:1;if(c>bc){bc=c;best=z;}}return best;}

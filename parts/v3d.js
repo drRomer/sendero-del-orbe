@@ -3,8 +3,8 @@
    ============================================================ */
 const GUARD_ROT=true; // aprobado por Tomás
 const GKIND=GUARD_ROT?['ent','wolves','griffin']:['ent','ent','ent'];
-const GNAME={ent:['ENT','ERRANTE'],wolves:['LOBOS','SABUESOS'],griffin:['HIPOGRIFO','PEGASO']};
-const GFREE={ent:['¡ENT LIBERADO!','¡ERRANTE LIBERADO!'],wolves:['¡LOBOS LIBERADOS!','¡SABUESOS LIBERADOS!'],griffin:['¡HIPOGRIFO LIBERADO!','¡PEGASO LIBERADO!']};
+const GNAME={ent:['TREANT','ERRANTE'],wolves:['LOBOS','SABUESOS'],griffin:['HIPOGRIFO','PEGASO']};
+const GFREE={ent:['¡TREANT LIBERADO!','¡ERRANTE LIBERADO!'],wolves:['¡LOBOS LIBERADOS!','¡SABUESOS LIBERADOS!'],griffin:['¡HIPOGRIFO LIBERADO!','¡PEGASO LIBERADO!']};
 const isCos=()=>GUARD_ROT&&SCN&&(SCN.env==='cosmo'||SCN.env==='void');
 const gName=gd=>GNAME[gd.kind||'ent'][isCos()?1:0];
 function drawSpr(S,fr,x,y,sc,flip){const k=S.k*PJ.s*(sc||1),w=Math.max(1,Math.round(S.fw*k)),h=Math.max(1,Math.round(S.fh*k));
@@ -12,11 +12,12 @@ function drawSpr(S,fr,x,y,sc,flip){const k=S.k*PJ.s*(sc||1),w=Math.max(1,Math.ro
   ctx.save();ctx.translate(Math.round(x),Math.round(y));ctx.scale(-1,1);ctx.drawImage(S.img,fr*S.fw,0,S.fw,S.fh,Math.round(-S.ax*k),Math.round(-S.ay*k),w,h);ctx.restore();}
 function guardFree(){
   const gd=G.guard;if(!gd||gd.st!=='lock')return;
-  gd.st='wake';gd.t=0;gd.hp=0;G.coins+=20;G.cards++;
+  gd.st='wake';gd.t=0;gd.hp=0;G.coins+=20;G.cards++;if(!G.demo&&save.st)save.st.guards++;
   shards(gd.x+1,gd.kind==='ent'?5:2,gd.z,gd.kind==='ent'?70:40);burst(gd.x+1,gd.kind==='ent'?5:2,gd.z,30,isCos()?'200,170,255':'190,245,255');
   sfx.shatter();setTimeout(()=>sfx.mech(),450);shake=.7;G.flashScr=.2;buzz(120);
   G.banner2={txt:GFREE[gd.kind||'ent'][isCos()?1:0],sub:'Ahora pelea a tu lado · elige una bendición',t:2.4,col:'#9ff0ff'};
   if(gd.kind==='wolves'){G.pack=[];for(let i=0;i<4;i++)G.pack.push({x:gd.x+i*.6,z:gd.z+rnd(-1,1),st:'back',t:0,cd:rnd(.6,1.4)+i*.4,tx:0,tz:0,face:1,ph:Math.random()*TAU,i,kd:13,sz:gd.z,bite:0});}
+  if(GDEF[gd.kind])spawnAllies(gd);
   if(gd.kind==='griffin'){G.grif={x:gd.x+.5,z:gd.z,y:1.2,st:'climb',t:0,cd:1.6,tx:0,tz:0,ty:0,ph:0,kd:14,sz:gd.z,y0:1.2};}
 }
 function updGuard(dt){
@@ -41,7 +42,7 @@ function updGuard(dt){
   for(let i=gd.waves.length-1;i>=0;i--){const w=gd.waves[i];w.t+=dt;
     const k=Math.min(1,w.t/w.dur);if(Math.random()<.8)part({x:lerp(w.x0,w.x1,k)+rnd(-.3,.3),y:.2,z:lerp(w.z0,w.z1,k),vx:rnd(-1,1),vy:rnd(1,4),vz:rnd(-1,1),l:.4,m:.4,sz:rnd(.08,.16),c:isCos()?'200,170,255':'150,240,255',t:0});
     if(w.t>=w.dur){guardImpact(w);gd.waves.splice(i,1);}}
-  updPack(dt);updGrif(dt);
+  updPack(dt);updGrif(dt);updAllies(dt);
 }
 function allyHit(x,z,r,mul,bossMul){const fm=1+.5*G.bl.ent,ad=arrowDmg();
   for(const o of G.zombies){if(o.dead||o.ov)continue;if((o.x-x)**2+(o.z-z)**2<r*r){o.hp-=(o.mini?o.max*.06*mul/10:o.br?ad*mul*1.4:ad*mul)*fm;o.hit=.1;if(o.hp<=0)killZombie(o,true);}}
@@ -81,6 +82,7 @@ function drawGuardian2(gd){
     if(lk){const bars=lost?9:Math.max(0,Math.ceil(9*hpk));ctx.fillStyle=cos?'#8a7ad8':'#4a4a56';const bw=Math.max(1,Math.round(.16*s)),h=Math.round(2.9*s);
       for(let k=0;k<9;k++){if(k>=bars)continue;ctx.fillRect(Math.round(cx+(-3.1+k*.95)*s),Math.round(by-h),bw,h);}
       ctx.fillRect(Math.round(cx-3.3*s),Math.round(by-h),Math.round(8*s),Math.max(1,Math.round(.25*s)));}}
+  else if(GDEF[gd.kind])drawLockedNew(gd,cx,by,s,lk,lost,hpk,cos);
   else{const S=SPR.grifS[cos?1:0];drawSpr(S.perch,0,cx+.5*s,by,1);
     if(lk){const n=lost?3:Math.max(0,Math.ceil(3*hpk)),ends=[[-3.4,-.4],[4.4,-.4],[.5,-.2]],nx=cx+.5*s,ny=by-2.6*s;ctx.fillStyle=cos?'#9a8ae8':'#7a7a8c';
       for(let k=0;k<n;k++){const [ex,ey]=ends[k],x0=cx+ex*s,y0=by+ey*s,L=Math.max(4,Math.round(Math.hypot(nx-x0,ny-y0)/Math.max(2,s*.35)));for(let q=0;q<=L;q++){const x=Math.round(x0+(nx-x0)*q/L),y=Math.round(y0+(ny-y0)*q/L+Math.sin(q/L*Math.PI)*s*.4);ctx.fillRect(x,y,q%2?2:1,q%2?1:2);}}}}

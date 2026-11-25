@@ -140,12 +140,13 @@ function update(dt){
   const g=G,sq=g.squad;g.time+=dt;
   if(g.demo){demoUpdate(dt);return;}
   const alive=g.phase==='run'||g.phase==='boss';
+  if(g.tut)tutTick(dt);
+  if(g.soldiers.length>(g.peak||0))g.peak=g.soldiers.length;
   if(alive){if(keys.l)sq.tx-=10*dt;if(keys.r)sq.tx+=10*dt;}
   const n=g.soldiers.length,rad=formRad(n)*(g.cmp||1);let lo=-Math.max(0,ROAD-rad*.9),hi=Math.max(0,ROAD-rad*.9);
-  const F=g.fork;if(F&&sq.z>=F.z0-1&&sq.z<=F.z1){if(!g.forkSide){g.forkSide=sq.x<0?-1:1;g.banner2={txt:g.forkSide<0?'SENDERO':'CAMPO DE BATALLA',sub:g.forkSide<0?'Cofres y trampas':'Más enemigos · oro doble',t:1.8,col:g.forkSide<0?'#c8ff8a':'#ffb0a0'};}
-    if(g.forkSide<0)hi=Math.min(hi,-1.15-rad*.9);else lo=Math.max(lo,1.15+rad*.9);if(lo>hi){const m=(lo+hi)/2;lo=hi=m;}}
+  const F=g.fork;if(F){forkTick(g,sq,dt);}
   sq.tx=clamp(sq.tx,lo,hi);sq.x+=(sq.tx-sq.x)*Math.min(1,dt*14);
-  const Br=g.bridge,inB=Br&&sq.z>Br.z0-9&&sq.z<Br.z1+1,inF=F&&sq.z>F.z0-7&&sq.z<F.z1;g.cmp+=(((inB||inF)?.5:1)-g.cmp)*Math.min(1,dt*3);
+  const Br=g.bridge,inB=Br&&sq.z>Br.z0-9&&sq.z<Br.z1+1,inF=false;g.cmp+=(((inB||inF)?.5:1)-g.cmp)*Math.min(1,dt*3);
   if(g.phase==='run'&&sq.z>=g.L-22){g.phase='boss';startBoss();}
   const slow=g.guard&&g.guard.st==='lock';
   const tsp=g.phase==='run'?(slow?SLOW:RUN):0;sq.sp+=(tsp-sq.sp)*Math.min(1,dt*(tsp>sq.sp?1.6:2.6));
@@ -157,7 +158,7 @@ function update(dt){
   if(alive){gatesPass();cratesPass();updEvents(dt);updUnits(dt);}
   updGuard(dt);updBoss(dt);updShock(dt);updHazards(dt);updBP(dt);updSlash(dt);updParts(dt);
   if(alive&&g.reserve>0&&g.soldiers.length<MAX_SQUAD){g.refT-=dt;if(g.refT<=0){const k=g.soldiers.length===0?Math.min(g.reserve,12):1;g.refT=.12;g.reserve-=k;addSoldiersRaw(k,false);}}
-  if(alive)g.meter=Math.min(1,g.meter+dt*.008*(1+.25*save.up.slash)*(1+.6*g.bl.magic));
+  if(alive)g.meter=Math.min(1,g.meter+dt*.008*(1+.15*save.up.slash)*(1+.6*g.bl.magic));
   if(alive&&g.cards>0&&g.phase==='run'&&state==='play'&&!g.banner2){openCards();return;}
   if(alive&&g.soldiers.length===0&&g.reserve===0){if(g.phase==='boss'&&canRevive()){openRevive();return;}g.phase='lose';g.endT=0;sfx.lose();buzz(200);}
   if(g.phase==='win'||g.phase==='lose'){g.endT+=dt;if(g.endT>(g.phase==='win'?2.4:1.5)&&!g.shown){g.shown=true;showEnd();}}
@@ -166,9 +167,10 @@ function update(dt){
 // ---------- pantallas ----------
 let NEXT_MODE='next';
 function startGame(opts){initAudio();sfx.click();
-  if(!(opts&&opts.daily)){if(NEXT_MODE==='menu'){NEXT_MODE='next';toMenu();return;}if(NEXT_MODE==='daily'){opts={daily:dailyInfo()};}}
+  if(!(opts&&opts.daily)){if(NEXT_MODE==='menu'){NEXT_MODE='next';toMenu();return;}if(NEXT_MODE==='daily'){opts={daily:dailyInfo()};}else if(NEXT_MODE==='tut'){opts={tut:true};}}
   NEXT_MODE='next';musStart();COINXY=null;CF.length=0;const daily=opts&&opts.daily?opts.daily:null;
-  newRun(daily?daily.lv:save.level,false,{daily});hc={};moved=false;state='play';show(null);$('cardScr').classList.add('hidden');$('revScr').classList.add('hidden');hud.root.classList.remove('hidden');perf.reset();
+  const tut=!daily&&((opts&&opts.tut)||(!save.tut&&save.best<=1&&save.level<=1));
+  newRun(daily?daily.lv:tut?0:save.level,false,{daily});hc={};moved=false;state='play';show(null);$('cardScr').classList.add('hidden');$('revScr').classList.add('hidden');hud.root.classList.remove('hidden');perf.reset();
   if(daily)G.banner2={txt:'DESAFÍO DIARIO',sub:daily.name,t:2.6,col:'#ffe27a'};else if(G.lv>MAXLV)G.banner2={txt:'MODO INFINITO',sub:'Ronda '+(G.lv-MAXLV),t:2.4,col:'#d8b8ff'};}
 function showEnd(){
   musStop();state='end';const win=G.phase==='win',surv=G.soldiers.length,res=G.reserve,gf=G.guard&&G.guard.st==='ally',tot=surv+res;
@@ -177,19 +179,25 @@ function showEnd(){
   const daily=G.daily;let dailyMsg='';
   if(daily&&win&&save.daily!==daily.key){earned+=daily.reward;save.daily=daily.key;dailyMsg='+'+daily.reward+' desafío';}
   save.coins+=earned;
-  if(win&&!daily){save.stars[G.lv]=Math.max(save.stars[G.lv]||0,stars);save.level=G.lv+1;save.best=Math.max(save.best,save.level);}
+  const tutEnd=G.lv===0;if(tutEnd){stars=0;if(win)save.tut=true;}
+  const v4rows=v4End(win,tutEnd,stars);
+  if(win&&!daily&&!tutEnd){save.stars[G.lv]=Math.max(save.stars[G.lv]||0,stars);save.level=G.lv+1;save.best=Math.max(save.best,save.level);}
   persist();
   const fin=win&&G.lv===MAXLV&&!daily;
-  $('eTitle').textContent=fin?'¡EL CAOS HA CAÍDO!':win?'¡CAMINO DESPEJADO!':'LA HORDA TE ALCANZÓ';
-  $('eSub').textContent=fin?'Completaste el Sendero del Orbe · se abre el modo infinito':daily?(win?'Desafío diario superado':'Desafío diario · inténtalo otra vez'):win?('Nivel '+G.lv+' completado · '+'★'.repeat(stars)+'☆'.repeat(3-stars)):'Nivel '+G.lv+' · mejora tu legión y vuelve';
+  $('eTitle').textContent=fin?'¡EL CAOS HA CAÍDO!':tutEnd&&win?'¡TUTORIAL COMPLETADO!':win?'¡CAMINO DESPEJADO!':'LA HORDA TE ALCANZÓ';
+  $('eSub').textContent=tutEnd?(win?'Ya sabes lo esencial: comienza el Sendero':'Etapa 0 · inténtalo otra vez'):fin?'Completaste el Sendero del Orbe · se abre el modo infinito':daily?(win?'Desafío diario superado':'Desafío diario · inténtalo otra vez'):win?('Nivel '+G.lv+' completado · '+'★'.repeat(stars)+'☆'.repeat(3-stars)):'Nivel '+G.lv+' · mejora tu legión y vuelve';
   const st=$('eStats');st.replaceChildren();
   const rows=[['Enemigos derrotados',G.kills],['Tropas en pie',surv+(res?' +'+res:'')],['Guardián',G.guard?(gf?'Liberado':'Perdido'):'—'],['Monedas ganadas','+'+earned+(dailyMsg?' ('+dailyMsg+')':'')]];
-  if(win&&!daily){rows.push(['Estrellas','★'.repeat(stars)+'☆'.repeat(3-stars)]);if(stars<3)rows.push(['Para 3 ★',(gf?'':'liberar al guardián')+(!gf&&tot<40?' y ':'')+(tot<40?'40+ tropas':'')]);}
-  for(const [k,v] of rows){const r=mkEl('div');r.append(mkEl('span',null,k),mkEl('b',null,String(v)));st.append(r);}
+  if(win&&!daily&&!tutEnd){rows.push(['Estrellas','★'.repeat(stars)+'☆'.repeat(3-stars)]);if(stars<3)rows.push(['Para 3 ★',[gf?'':'liberar al guardián',tot<40?'40+ tropas':''].filter(Boolean)]);}
+  rows.push(...v4rows);const newAch=checkAch(true);if(newAch.length)rows.push([newAch.length>1?'¡Logros!':'¡Logro!',newAch.map(a=>a.name).concat('+'+newAch.reduce((t,a)=>t+a.g,0)+' gemas')]);
+  // valores con varias partes (fragmentos, logros): una línea por parte, alineadas a la derecha
+  for(const [k,v] of rows){const r=mkEl('div'),b=mkEl('b');if(Array.isArray(v))v.forEach(x=>b.append(mkEl('span','ln',String(x))));else b.textContent=String(v);r.append(mkEl('span',null,k),b);st.append(r);}
   if(daily){NEXT_MODE=win?'menu':'daily';$('bNext').textContent=win?'VOLVER AL MENÚ':'REINTENTAR DESAFÍO';}
+  else if(tutEnd){NEXT_MODE=win?'next':'tut';$('bNext').textContent=win?'COMENZAR · NIVEL '+save.level:'REINTENTAR TUTORIAL';}
   else{NEXT_MODE='next';$('bNext').textContent=win?(save.level>MAXLV?'MODO INFINITO · RONDA '+(save.level-MAXLV):'SIGUIENTE · NIVEL '+save.level):'REINTENTAR';}
   $('bNext').classList.toggle('red',!win);
   hud.root.classList.add('hidden');show('endScr');
+  if(!daily||win)setTimeout(()=>lbPost(true),300);
 }
 function renderShop(){
   const list=$('shopList');list.replaceChildren();
@@ -199,7 +207,7 @@ function renderShop(){
     if(mx){bt.textContent='MÁX';bt.disabled=true;}else{bt.append(mkEl('i','coin'),document.createTextNode(String(c)));bt.disabled=save.coins<c;}
     bt.addEventListener('click',()=>{const l=save.up[u.id];if(l>=u.max)return;const k=cost(u,l);if(save.coins<k)return;save.coins-=k;save.up[u.id]=l+1;persist();initAudio();sfx.crate();renderShop();});
     row.append(ic,tx,bt);list.append(row);}
-  $('shopCoins').textContent=String(save.coins);$('mLv').textContent=save.level>MAXLV?('∞ '+(save.level-MAXLV)):String(save.level);
+  $('shopCoins').textContent=String(save.coins);{const e=$('shopGems');if(e)e.textContent=String(save.gems||0);}$('mLv').textContent=save.level>MAXLV?('∞ '+(save.level-MAXLV)):String(save.level);
   const bt=$('mBoss');if(bt)bt.textContent=bossTitle(save.level)+' · '+PALS[ENVB[blockOf(save.level)]].name;
   const ms=$('mStars');if(ms)ms.textContent='ESTRELLAS '+totalStars()+' / '+(MAXLV*3);
   const di=dailyInfo(),bd=$('bDaily');if(bd){bd.textContent=save.daily===di.key?'DESAFÍO DIARIO · HECHO':'DESAFÍO DIARIO · '+di.name;bd.disabled=save.daily===di.key;}

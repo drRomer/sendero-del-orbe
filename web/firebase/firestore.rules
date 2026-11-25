@@ -2,10 +2,33 @@ rules_version = '2';
 service cloud.firestore {
   match /databases/{database}/documents {
 
+    // ---------- Sendero del Orbe ----------
     // Un documento por jugador, con el id opaco de Firebase (uid). Sin nombre ni correo.
     match /saves/{uid} {
       allow read, delete: if isOwner(uid);
       allow create, update: if isOwner(uid) && validSave(request.resource.data);
+    }
+
+    // ---------- Escalada Épica ----------
+    match /escalada/{uid} {
+      allow read, delete: if isOwner(uid);
+      allow create, update: if isOwner(uid) && validEscalada(request.resource.data);
+    }
+
+    // ---------- Tablas de leyendas (públicas para jugadores con sesión; cada uno escribe solo su fila) ----------
+    match /lb_sendero/{uid} {
+      allow read: if request.auth != null;
+      allow create: if isOwner(uid) && validLbSendero(request.resource.data);
+      allow update: if isOwner(uid) && validLbSendero(request.resource.data) && notBackwards(request.resource.data, resource.data, ['km', 'd', 'lv'])
+        && request.time > resource.data.t + duration.value(15, 's');
+      allow delete: if isOwner(uid);
+    }
+    match /lb_escalada/{uid} {
+      allow read: if request.auth != null;
+      allow create: if isOwner(uid) && validLbEscalada(request.resource.data);
+      allow update: if isOwner(uid) && validLbEscalada(request.resource.data) && notBackwards(request.resource.data, resource.data, ['m', 'd', 'c', 'lv'])
+        && request.time > resource.data.t + duration.value(15, 's');
+      allow delete: if isOwner(uid);
     }
 
     // Todo lo demás queda cerrado.
@@ -23,14 +46,67 @@ service cloud.firestore {
         && s.pt is int && s.pt >= 0
         && s.t == request.time
         && s.d is map
-        && s.d.keys().hasOnly(['level', 'best', 'coins', 'up', 'stars', 'daily'])
+        && s.d.keys().hasOnly(['level', 'best', 'coins', 'up', 'stars', 'daily', 'x'])
         && s.d.keys().hasAll(['level', 'best', 'coins', 'up', 'stars', 'daily'])
         && s.d.level is int && s.d.level >= 1 && s.d.level <= 999
         && s.d.best is int && s.d.best >= 1 && s.d.best <= 999
         && s.d.coins is int && s.d.coins >= 0 && s.d.coins <= 1000000000
         && s.d.up is map && s.d.up.size() <= 16
         && s.d.stars is map && s.d.stars.size() <= 999
-        && s.d.daily is string && s.d.daily.size() <= 8;
+        && s.d.daily is string && s.d.daily.size() <= 8
+        && (!('x' in s.d) || (s.d.x is map && s.d.x.size() <= 16));
+    }
+
+    function validEscalada(s) {
+      return s.keys().hasOnly(['v', 'd', 'pt', 't']) && s.keys().hasAll(['v', 'd', 'pt', 't'])
+        && s.v == 1
+        && s.pt is int && s.pt >= 0
+        && s.t == request.time
+        && s.d is map
+        && s.d.keys().hasOnly(['unlocked', 'best', 'cloak', 'story', 'bossDone', 'seenCloak', 'hearts', 'lev', 'hid', 'heroes', 'gspent', 'st'])
+        && s.d.keys().hasAll(['unlocked', 'best', 'cloak', 'story', 'bossDone', 'seenCloak', 'hearts', 'lev'])
+        && s.d.unlocked is int && s.d.unlocked >= 1 && s.d.unlocked <= 50
+        && s.d.best is map && s.d.best.size() <= 50
+        && s.d.cloak is int && s.d.cloak >= 0 && s.d.cloak <= 3
+        && s.d.story is map && s.d.story.size() <= 5
+        && s.d.bossDone is map && s.d.bossDone.size() <= 5
+        && s.d.seenCloak is map && s.d.seenCloak.size() <= 4
+        && s.d.hearts is int && s.d.hearts >= 0 && s.d.hearts <= 1
+        && s.d.lev is int && s.d.lev >= 0 && s.d.lev <= 1
+        && (!('hid' in s.d) || (s.d.hid is string && s.d.hid.size() <= 12))
+        && (!('heroes' in s.d) || (s.d.heroes is list && s.d.heroes.size() <= 10))
+        && (!('gspent' in s.d) || (s.d.gspent is int && s.d.gspent >= 0 && s.d.gspent <= 1000))
+        && (!('st' in s.d) || (s.d.st is map && s.d.st.size() <= 4));
+    }
+    // Las cifras acumuladas nunca bajan (no se puede "borrar" muertes reescribiendo la fila).
+    function notBackwards(n, o, ks) {
+      return n[ks[0]] >= o[ks[0]] && n[ks[1]] >= o[ks[1]] && n[ks[2]] >= o[ks[2]] && (ks.size() < 4 || n[ks[3]] >= o[ks[3]]);
+    }
+    // Puntaje = avance × niveles ÷ (niveles + errores ÷ 2): se recalcula aquí y debe cuadrar.
+    function scoreOk(s, adv, lv, err) {
+      return s is number && s >= 0 && s <= adv + 0.001
+        && math.abs(s * (lv + err * 0.5) - adv * lv) <= 0.002 * (lv + err * 0.5) + 0.002;
+    }
+    function validLbSendero(e) {
+      return e.keys().hasOnly(['n', 'km', 'd', 'lv', 's', 'ti', 't']) && e.keys().hasAll(['n', 'km', 'd', 'lv', 's', 'ti', 't'])
+        && e.n is string && e.n.matches('^[A-Z]{3}$')
+        && e.lv is int && e.lv >= 0 && e.lv <= 999
+        && e.d is int && e.d >= 0 && e.d <= 100000
+        && e.km is number && e.km >= 0 && e.km <= e.lv * 1.35 + 60
+        && scoreOk(e.s, e.km, e.lv, e.d)
+        && e.ti is string && e.ti.size() <= 16
+        && e.t == request.time;
+    }
+    function validLbEscalada(e) {
+      return e.keys().hasOnly(['n', 'm', 'd', 'c', 'lv', 's', 'h', 't']) && e.keys().hasAll(['n', 'm', 'd', 'c', 'lv', 's', 'h', 't'])
+        && e.n is string && e.n.matches('^[A-Z]{3}$')
+        && e.lv is int && e.lv >= 0 && e.lv <= 50
+        && e.d is int && e.d >= 0 && e.d <= 100000
+        && e.c is int && e.c >= 0 && e.c <= 100000
+        && e.m is int && e.m >= 0 && e.m <= e.lv * 3000 + 3000
+        && scoreOk(e.s, e.m, e.lv, e.d + e.c)
+        && e.h is string && e.h.size() <= 12
+        && e.t == request.time;
     }
   }
 }

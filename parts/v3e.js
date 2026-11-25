@@ -5,12 +5,22 @@ screens.push('titleScr','mainScr','optScr','confirmScr','byeScr');
 let HOW_BACK='optScr';
 {const a=document.querySelector('.logoBig'),b=$('mainLogo');if(a&&b)b.src=a.src;}
 // ---------- resolución según la calidad elegida ----------
-const QUAL={normal:200,alta:250,baja:160},QUALN={normal:'Normal',alta:'Alta',baja:'Baja'};
+// La resolución lógica se elige para que la cámara (F) quede igual que en un celular vertical de
+// 200 px lógicos de ancho: así los sprites se dibujan a su tamaño nativo en cualquier pantalla.
+// Cada píxel lógico ocupa un número ENTERO de píxeles físicos (sin estiramientos desparejos).
+const QUAL={normal:1,alta:1.25,baja:.8},QUALN={normal:'Normal',alta:'Alta',baja:'Baja'};
+const F_REF=.96*200*(CAM_D*cosP+CAM_H*sinP)/(2*RAIL);
+let LDEV=2;
 function resize(){
-  const cw=Math.max(1,innerWidth),ch=Math.max(1,innerHeight);
-  PIX=Math.max(2,Math.round(cw/(QUAL[save.qual]||200)));W=Math.ceil(cw/PIX);H=Math.ceil(ch/PIX);DPR=1;
-  cv.width=W;cv.height=H;ctx.imageSmoothingEnabled=false;
+  const dpr=Math.max(1,window.devicePixelRatio||1);
+  const wd=Math.max(1,Math.round(innerWidth*dpr)),hd=Math.max(1,Math.round(innerHeight*dpr));
   dSq=CAM_D*cosP+CAM_H*sinP;
+  const f1=Math.min(.74*hd,.96*wd*dSq/(2*RAIL));
+  LDEV=Math.max(1,Math.round(f1/(F_REF*(QUAL[save.qual]||1))));
+  W=Math.ceil(wd/LDEV);H=Math.ceil(hd/LDEV);PIX=LDEV/dpr;DPR=1;
+  cv.width=W;cv.height=H;cv.style.width=(W*PIX)+'px';cv.style.height=(H*PIX)+'px';
+  ctx.imageSmoothingEnabled=false;
+  {const ui=Math.max(1,Math.min(2,innerWidth/700,innerHeight/520));document.documentElement.style.setProperty('--ui',ui.toFixed(3));}
   const vSq=-CAM_H*cosP+CAM_D*sinP;
   F=Math.min(0.74*H,0.96*W*dSq/(2*RAIL));
   CX=W/2; CY=0.75*H+vSq*F/dSq; HORY=CY-tanP*F;
@@ -68,3 +78,9 @@ $('oSfx').addEventListener('change',()=>sfx.crate());
 $('bVib').addEventListener('click',()=>{save.vib=save.vib===false;persist();sfx.click();if(save.vib)buzz(40);renderOpts();});
 $('bQual').addEventListener('click',()=>{const o=['normal','alta','baja'];save.qual=o[(o.indexOf(save.qual||'normal')+1)%o.length];persist();sfx.click();resize();renderOpts();});
 $('bReset').addEventListener('click',()=>{sfx.click();askConfirm('¿BORRAR TODO EL PROGRESO?','Vuelves al nivel 1 sin monedas, mejoras ni estrellas. Las opciones se mantienen.'+(save.cu?' También se reemplaza tu copia en la nube.':''),()=>{resetProgress();toOptions();},toOptions,'BORRAR','CANCELAR');});
+
+// ---------- textos según el dispositivo: teclado/mouse (body.kb) o táctil ----------
+{const B=document.body,set=k=>B.classList.toggle('kb',k);
+  set(!!(window.matchMedia&&matchMedia('(hover: hover) and (pointer: fine)').matches));
+  addEventListener('keydown',()=>set(true),true);
+  addEventListener('pointerdown',e=>{if(e.pointerType==='touch'||e.pointerType==='pen')set(false);else if(e.pointerType==='mouse')set(true);},true);}

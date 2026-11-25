@@ -4,6 +4,7 @@ import {initializeApp} from 'firebase/app';
 import {getAuth,GoogleAuthProvider,signInWithPopup,signInWithRedirect,getRedirectResult,onAuthStateChanged,signOut,deleteUser,reauthenticateWithPopup} from 'firebase/auth';
 import {getFirestore,doc,getDoc,setDoc,deleteDoc,serverTimestamp} from 'firebase/firestore/lite';
 import {mountCloud} from './cloud-ui.js';
+import {mountLeaderboard} from './leaderboard.js';
 
 const CFG=window.SDO_FIREBASE;
 const configured=c=>!!c&&typeof c==='object'&&/^AIza[0-9A-Za-z_-]{20,}$/.test(c.apiKey||'')&&/^[a-z0-9-]{4,40}$/.test(c.projectId||'')&&typeof c.appId==='string'&&c.appId.length>5;
@@ -45,6 +46,7 @@ function start(){
   };
   getRedirectResult(auth).catch(e=>{if(window.SDO)window.SDO.toast('No se pudo iniciar sesión con Google',3200);});
   mountCloud({sdo:window.SDO,auth:api,backend});
+  mountLeaderboard({auth,db,coll:'lb_sendero',fields:['n','km','d','lv','s','ti']});
 }
 
 if(window.SDO&&configured(CFG))start();
